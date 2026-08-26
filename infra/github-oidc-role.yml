@@ -45,6 +45,7 @@ Resources:
                   - cloudformation:DescribeChangeSet
                   - cloudformation:DescribeStacks
                   - cloudformation:ExecuteChangeSet
+                  - cloudformation:GetTemplateSummary
                   - cloudformation:UpdateStack
                 Resource: '*'
               - Sid: ManageDashboardContent
