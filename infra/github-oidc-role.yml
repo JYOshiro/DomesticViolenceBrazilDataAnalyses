@@ -26,7 +26,11 @@ Resources:
               StringEquals:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
               StringLike:
-                token.actions.githubusercontent.com:sub: !Sub 'repo:${GitHubRepository}:*'
+                token.actions.githubusercontent.com:sub:
+                  # GitHub Actions jobs use the production environment in deploy-aws.yml.
+                  # The second pattern supports GitHub's immutable owner/repository ID claims.
+                  - !Sub 'repo:${GitHubRepository}:environment:production'
+                  - 'repo:JYOshiro@*/DomesticViolenceBrazilDataAnalyses@*:environment:production'
       Policies:
         - PolicyName: DeployDashboardStaticSite
           PolicyDocument:
