@@ -2,9 +2,18 @@
 
 Static capstone dashboard built from aggregated SINAN, Vigitel, Ambev, protection-reporting, calendar, and policy-event data.
 
-## Published site
+## AWS deployment
 
-GitHub Pages deploys the `dashboard/` directory after each push to `main`. In the repository settings, set **Pages > Build and deployment > Source** to **GitHub Actions**.
+Pushes to `main` deploy `dashboard/` to a private S3 bucket behind CloudFront. The workflow uses GitHub OIDC, so AWS access keys are not stored in GitHub.
+
+One-time AWS bootstrap:
+
+1. In IAM, create the GitHub OIDC provider with URL `https://token.actions.githubusercontent.com` and audience `sts.amazonaws.com` if it does not already exist.
+2. Deploy `infra/github-oidc-role.yml` in CloudFormation, supplying that provider ARN. Copy its `DeployRoleArn` output.
+3. In GitHub repository **Settings > Secrets and variables > Actions > Variables**, set `AWS_DEPLOY_ROLE_ARN` to that output and `AWS_REGION` to the intended deployment region.
+4. Approve the `production` environment deployment if GitHub requests it. The workflow provisions and updates the S3/CloudFront site automatically.
+
+The public URL is emitted in each workflow run after CloudFront deployment. A custom domain can be added later with Route 53 and an ACM certificate in `us-east-1`.
 
 ## Refreshing dashboard data
 
