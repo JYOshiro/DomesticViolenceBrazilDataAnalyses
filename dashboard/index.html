@@ -43,7 +43,29 @@
         </div>
       </section>
 
-      <section class="control-bar" aria-label="Dashboard controls">
+      <div class="mobile-filter-dock">
+        <button
+          id="mobileFilterToggle"
+          class="mobile-filter-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="filterPanel"
+        >
+          <span class="mobile-filter-title">Filters <span id="activeFilterCount" class="filter-count" hidden>0</span></span>
+          <span id="mobileFilterSummary" class="mobile-filter-summary">2012-2025 | All regions</span>
+          <span class="mobile-filter-change">Change</span>
+        </button>
+      </div>
+      <div id="filterBackdrop" class="filter-backdrop" hidden></div>
+
+      <section id="filterPanel" class="control-bar" aria-label="Dashboard controls">
+        <div class="filter-sheet-header">
+          <div>
+            <p class="eyebrow">Dashboard controls</p>
+            <h3>Filter the SINAN view</h3>
+          </div>
+          <button id="closeFilters" class="filter-close" type="button">Close</button>
+        </div>
         <div>
           <label for="fromYear">From year</label>
           <select id="fromYear"></select>
@@ -60,7 +82,10 @@
           <label for="regionSelect">Region</label>
           <select id="regionSelect"></select>
         </div>
-        <button id="resetFilters" type="button">Reset view</button>
+        <div class="filter-actions">
+          <button id="resetFilters" type="button">Reset view</button>
+          <button id="applyFilters" class="apply-filters" type="button">Apply filters</button>
+        </div>
         <p class="filter-note">SINAN filters update SINAN sections. Protection, Vigitel, and Ambev remain source-native.</p>
       </section>
 

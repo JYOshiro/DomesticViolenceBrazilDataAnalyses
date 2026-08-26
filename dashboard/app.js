@@ -697,6 +697,22 @@ function setupControls() {
   const cohort = document.getElementById('cohortSelect');
   const region = document.getElementById('regionSelect');
   const dimension = document.getElementById('dimensionSelect');
+  const filterPanel = document.getElementById('filterPanel');
+  const filterToggle = document.getElementById('mobileFilterToggle');
+  const filterClose = document.getElementById('closeFilters');
+  const filterBackdrop = document.getElementById('filterBackdrop');
+  const applyFilters = document.getElementById('applyFilters');
+  const filterSummary = document.getElementById('mobileFilterSummary');
+  const filterCount = document.getElementById('activeFilterCount');
+  const mobileQuery = window.matchMedia('(max-width: 680px)');
+  const defaults = {
+    from: years[0],
+    to: years[years.length - 1],
+    cohort: 'B',
+    region: 'All'
+  };
+  let resetDimensionOnApply = false;
+  let lastFocusedElement = null;
 
   from.innerHTML = years.map(year => `<option value="${year}">${year}</option>`).join('');
   to.innerHTML = years.map(year => `<option value="${year}">${year}</option>`).join('');
@@ -704,38 +720,86 @@ function setupControls() {
   region.innerHTML = regions.map(name => `<option value="${name}">${name}</option>`).join('');
   dimension.innerHTML = dimensions.map(name => `<option value="${name}">${name}</option>`).join('');
 
-  from.value = state.from;
-  to.value = state.to;
-  cohort.value = state.cohort;
-  region.value = state.region;
+  const syncControlsFromState = () => {
+    from.value = state.from;
+    to.value = state.to;
+    cohort.value = state.cohort;
+    region.value = state.region;
+  };
+
+  const updateMobileSummary = () => {
+    const activeCount = Number(state.from !== defaults.from || state.to !== defaults.to)
+      + Number(state.cohort !== defaults.cohort)
+      + Number(state.region !== defaults.region);
+    filterCount.textContent = activeCount;
+    filterCount.hidden = activeCount === 0;
+    filterSummary.textContent = `${state.from}-${state.to} | ${state.region === 'All' ? 'All regions' : state.region}`;
+  };
+
+  const commitGlobalFilters = () => {
+    state.from = Number(from.value);
+    state.to = Number(to.value);
+    state.cohort = cohort.value;
+    state.region = region.value;
+    if (resetDimensionOnApply) {
+      state.dimension = 'Violence type';
+      dimension.value = state.dimension;
+      resetDimensionOnApply = false;
+    }
+    updateMobileSummary();
+    render();
+  };
+
+  const closeMobileFilters = ({ restoreControls = true, restoreFocus = true } = {}) => {
+    if (restoreControls) syncControlsFromState();
+    resetDimensionOnApply = false;
+    document.body.classList.remove('filters-open');
+    filterPanel.classList.remove('is-open');
+    filterPanel.setAttribute('aria-hidden', 'true');
+    filterToggle.setAttribute('aria-expanded', 'false');
+    filterBackdrop.hidden = true;
+    if (restoreFocus && lastFocusedElement) lastFocusedElement.focus();
+  };
+
+  const openMobileFilters = () => {
+    if (!mobileQuery.matches) return;
+    syncControlsFromState();
+    lastFocusedElement = document.activeElement;
+    document.body.classList.add('filters-open');
+    filterPanel.classList.add('is-open');
+    filterPanel.setAttribute('role', 'dialog');
+    filterPanel.setAttribute('aria-modal', 'true');
+    filterPanel.setAttribute('aria-hidden', 'false');
+    filterToggle.setAttribute('aria-expanded', 'true');
+    filterBackdrop.hidden = false;
+    window.setTimeout(() => filterClose.focus(), 200);
+  };
+
+  syncControlsFromState();
   dimension.value = state.dimension;
+  updateMobileSummary();
+  if (mobileQuery.matches) filterPanel.setAttribute('aria-hidden', 'true');
 
   from.addEventListener('change', () => {
-    state.from = Number(from.value);
-    if (state.from > state.to) {
-      state.to = state.from;
-      to.value = state.to;
+    if (Number(from.value) > Number(to.value)) {
+      to.value = from.value;
     }
-    render();
+    if (!mobileQuery.matches) commitGlobalFilters();
   });
 
   to.addEventListener('change', () => {
-    state.to = Number(to.value);
-    if (state.to < state.from) {
-      state.from = state.to;
-      from.value = state.from;
+    if (Number(to.value) < Number(from.value)) {
+      from.value = to.value;
     }
-    render();
+    if (!mobileQuery.matches) commitGlobalFilters();
   });
 
   cohort.addEventListener('change', () => {
-    state.cohort = cohort.value;
-    render();
+    if (!mobileQuery.matches) commitGlobalFilters();
   });
 
   region.addEventListener('change', () => {
-    state.region = region.value;
-    render();
+    if (!mobileQuery.matches) commitGlobalFilters();
   });
 
   dimension.addEventListener('change', () => {
@@ -744,17 +808,53 @@ function setupControls() {
   });
 
   document.getElementById('resetFilters').addEventListener('click', () => {
-    state.from = 2012;
-    state.to = 2025;
-    state.cohort = 'B';
-    state.region = 'All';
-    state.dimension = 'Violence type';
-    from.value = state.from;
-    to.value = state.to;
-    cohort.value = state.cohort;
-    region.value = state.region;
-    dimension.value = state.dimension;
-    render();
+    from.value = defaults.from;
+    to.value = defaults.to;
+    cohort.value = defaults.cohort;
+    region.value = defaults.region;
+    resetDimensionOnApply = true;
+    if (!mobileQuery.matches) commitGlobalFilters();
+  });
+
+  filterToggle.addEventListener('click', openMobileFilters);
+  filterClose.addEventListener('click', () => closeMobileFilters());
+  filterBackdrop.addEventListener('click', () => closeMobileFilters());
+  applyFilters.addEventListener('click', () => {
+    commitGlobalFilters();
+    closeMobileFilters({ restoreControls: false });
+  });
+
+  filterPanel.addEventListener('keydown', event => {
+    if (!filterPanel.classList.contains('is-open')) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeMobileFilters();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = [...filterPanel.querySelectorAll('button:not([disabled]), select:not([disabled])')];
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  mobileQuery.addEventListener('change', event => {
+    if (event.matches) {
+      filterPanel.setAttribute('role', 'dialog');
+      filterPanel.setAttribute('aria-modal', 'true');
+      filterPanel.setAttribute('aria-hidden', 'true');
+    } else {
+      closeMobileFilters({ restoreFocus: false });
+      filterPanel.removeAttribute('role');
+      filterPanel.removeAttribute('aria-modal');
+      filterPanel.removeAttribute('aria-hidden');
+    }
   });
 }
 
