@@ -30,14 +30,12 @@
           <div>
             <h1>Recorded violence, alcohol indication, and reporting context.</h1>
             <p class="lede">
-              This dashboard keeps health notifications, protection reports, alcohol survey indicators,
-              beer-market signals, and policy markers separate. It is designed for descriptive interpretation,
-              not causal claims.
+              What can be observed in SINAN notifications, protection reports, Vigitel survey indicators, and Ambev beer sales? This dashboard presents a descriptive view of the available data, with filters for time, region, and SINAN cohort. It does not independently prove a causal effect of alcohol on violence or of policy changes on either.
             </p>
           </div>
           <aside class="question-card">
             <p class="eyebrow">PRIMARY QUESTION</p>
-            <p>What do Brazil’s health-notification and protection-reporting systems show about the recorded burden of violence, and where is alcohol documented as a risk indicator?</p>
+            <p>Could a change in laws and policies affect the recorded incidence of domestic violence and alcohol-related harm in Brazil?</p>
             <small id="coverageNote"></small>
           </aside>
         </div>
@@ -228,14 +226,15 @@
             <p class="caption" id="breakdownCaption"></p>
           </article>
           <article class="panel note-panel">
-            <p class="eyebrow">READING NOTE</p>
-            <h3>Interpret the counts inside the chosen cohort.</h3>
-            <ul class="plain-list">
-              <li id="breakdownCalculationNote"></li>
-              <li id="breakdownCohortNote"></li>
-              <li id="breakdownRegionNote"></li>
-              <li id="breakdownMentionNote"></li>
-            </ul>
+            <p class="eyebrow">SELECTED CATEGORY INSIGHTS</p>
+            <h3 id="breakdownInsightTitle">Select a category</h3>
+            <p class="insight-context" id="breakdownInsightContext"></p>
+            <div id="breakdownInsightList" class="insight-card-grid" role="list" aria-live="polite"></div>
+            <p id="breakdownInsightLimitation" class="insight-limitation"></p>
+            <p class="insight-method-note">
+              Percentages use known responses unless stated otherwise. Violence types and aggressor relationships
+              are mention-based, so one notification may contribute to more than one category.
+            </p>
           </article>
         </div>
       </section>
@@ -438,7 +437,7 @@
       </section>
     </main>
 
-    <footer>Capstone dashboard prototype built from the existing DuckDB project database.</footer>
+    <footer>Jessica Oshiro's Capstone dashboard prototype planned with Codex GPT Sol 6.4 and built with Terra 6.4. Data cleaning and preparation by Jessica Oshiro. </footer>
     <script src="data/dashboard-data.js"></script>
     <script src="app.js"></script>
   </body>

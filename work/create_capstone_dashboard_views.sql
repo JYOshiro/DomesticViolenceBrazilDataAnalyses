@@ -98,6 +98,20 @@ WITH parsed AS (
             WHEN '9' THEN 'Unknown'
             ELSE 'Unknown'
         END AS victim_race,
+        CASE CS_ESCOL_N
+            WHEN '0' THEN 'No schooling/illiterate'
+            WHEN '1' THEN 'Grades 1-4 incomplete'
+            WHEN '2' THEN 'Grade 4 complete'
+            WHEN '3' THEN 'Grades 5-8 incomplete'
+            WHEN '4' THEN 'Primary education complete'
+            WHEN '5' THEN 'Secondary education incomplete'
+            WHEN '6' THEN 'Secondary education complete'
+            WHEN '7' THEN 'Higher education incomplete'
+            WHEN '8' THEN 'Higher education complete'
+            WHEN '10' THEN 'Not applicable'
+            WHEN '9' THEN 'Unknown'
+            ELSE 'Unknown'
+        END AS victim_schooling,
         CASE
             WHEN REGEXP_MATCHES(TRIM(NU_IDADE_N), '^4[0-9]{1,3}$')
                 THEN TRY_CAST(SUBSTR(TRIM(NU_IDADE_N), 2) AS INTEGER)
@@ -142,6 +156,13 @@ WITH parsed AS (
             WHEN '9' THEN 'Unknown'
             ELSE 'Unknown'
         END AS alcohol_status,
+        CASE AUTOR_SEXO
+            WHEN '1' THEN 'Male'
+            WHEN '2' THEN 'Female'
+            WHEN '3' THEN 'Both sexes'
+            WHEN '9' THEN 'Unknown'
+            ELSE 'Unknown'
+        END AS perpetrator_sex,
         CASE
             WHEN COALESCE(DEF_TRANS, '9') = '1'
               OR COALESCE(DEF_FISICA, '9') = '1'
@@ -355,6 +376,77 @@ SELECT cohort_name, cohort_code, occurrence_date, occurrence_month, occurrence_y
        victim_sex, victim_age_group, alcohol_status, 'Aggressor relationship', 'Caregiver'
 FROM analytics.vw_sinan_cohorted_notifications
 WHERE REL_CUIDA = '1';
+
+-- One row per notification and applicable dashboard breakdown option. This view
+-- keeps the browser export aggregated while allowing every displayed option to
+-- be profiled against the same cohort, year, and region filters.
+CREATE OR REPLACE VIEW analytics.fact_sinan_breakdown_memberships AS
+SELECT
+    s.cohort_name,
+    s.cohort_code,
+    s.occurrence_year AS year,
+    s.region_name,
+    b.dimension_name,
+    b.dimension_value,
+    s.victim_sex,
+    s.victim_age_years,
+    s.victim_schooling,
+    s.perpetrator_sex,
+    s.REL_CONJ,
+    s.REL_EXCON,
+    s.REL_NAMO,
+    s.REL_EXNAM,
+    s.REL_PAI,
+    s.REL_MAE,
+    s.REL_PAD,
+    s.REL_MAD,
+    s.REL_FILHO,
+    s.REL_IRMAO,
+    s.REL_CUIDA,
+    s.VIOL_FISIC,
+    s.VIOL_PSICO,
+    s.VIOL_TORT,
+    s.VIOL_SEXU,
+    s.VIOL_TRAF,
+    s.VIOL_FINAN,
+    s.VIOL_NEGLI,
+    s.VIOL_INFAN,
+    s.VIOL_LEGAL,
+    s.VIOL_OUTR
+FROM analytics.vw_sinan_cohorted_notifications AS s
+CROSS JOIN LATERAL (
+    VALUES
+        ('Victim sex', s.victim_sex, TRUE),
+        ('Victim age group', s.victim_age_group, TRUE),
+        ('Victim race/ethnicity', s.victim_race, TRUE),
+        ('Victim disability status', s.disability_status, TRUE),
+        ('Place of occurrence', s.place_of_occurrence, TRUE),
+        ('Repeated violence', s.repeated_violence, TRUE),
+        ('Region', s.region_name, TRUE),
+        ('State', s.incident_state_name, TRUE),
+        ('Violence type', 'Physical violence', s.VIOL_FISIC = '1'),
+        ('Violence type', 'Psychological violence', s.VIOL_PSICO = '1'),
+        ('Violence type', 'Torture', s.VIOL_TORT = '1'),
+        ('Violence type', 'Sexual violence', s.VIOL_SEXU = '1'),
+        ('Violence type', 'Trafficking', s.VIOL_TRAF = '1'),
+        ('Violence type', 'Financial/economic violence', s.VIOL_FINAN = '1'),
+        ('Violence type', 'Neglect/abandonment', s.VIOL_NEGLI = '1'),
+        ('Violence type', 'Child labor', s.VIOL_INFAN = '1'),
+        ('Violence type', 'Legal intervention', s.VIOL_LEGAL = '1'),
+        ('Violence type', 'Other violence', s.VIOL_OUTR = '1'),
+        ('Aggressor relationship', 'Current spouse/partner', s.REL_CONJ = '1'),
+        ('Aggressor relationship', 'Former spouse/partner', s.REL_EXCON = '1'),
+        ('Aggressor relationship', 'Current boyfriend/girlfriend', s.REL_NAMO = '1'),
+        ('Aggressor relationship', 'Former boyfriend/girlfriend', s.REL_EXNAM = '1'),
+        ('Aggressor relationship', 'Father', s.REL_PAI = '1'),
+        ('Aggressor relationship', 'Mother', s.REL_MAE = '1'),
+        ('Aggressor relationship', 'Stepfather', s.REL_PAD = '1'),
+        ('Aggressor relationship', 'Stepmother', s.REL_MAD = '1'),
+        ('Aggressor relationship', 'Child', s.REL_FILHO = '1'),
+        ('Aggressor relationship', 'Sibling', s.REL_IRMAO = '1'),
+        ('Aggressor relationship', 'Caregiver', s.REL_CUIDA = '1')
+) AS b(dimension_name, dimension_value, is_member)
+WHERE b.is_member;
 
 -- Keeps the raw Vigitel fields intact while exposing dashboard-safe, documented indicators.
 -- The legacy 30-day indicator cannot be reproduced from the populated 2024 source fields,

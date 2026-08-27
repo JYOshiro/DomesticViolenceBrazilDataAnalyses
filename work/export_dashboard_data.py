@@ -190,6 +190,64 @@ def main():
         """,
     )
 
+    breakdown_insights = run_query(
+        connection,
+        """
+        SELECT
+            year,
+            cohort_code,
+            cohort_name,
+            region_name,
+            dimension_name,
+            dimension_value,
+            COUNT(*) AS notification_count,
+            SUM(CASE WHEN victim_age_years BETWEEN 0 AND 120 THEN victim_age_years ELSE 0 END) AS victim_age_sum,
+            COUNT(*) FILTER (WHERE victim_age_years BETWEEN 0 AND 120) AS victim_age_known_count,
+            COUNT(*) FILTER (WHERE victim_sex = 'Female') AS victim_sex_female_count,
+            COUNT(*) FILTER (WHERE victim_sex = 'Male') AS victim_sex_male_count,
+            COUNT(*) FILTER (WHERE victim_sex = 'Unknown') AS victim_sex_unknown_count,
+            COUNT(*) FILTER (WHERE perpetrator_sex = 'Male') AS perpetrator_sex_male_count,
+            COUNT(*) FILTER (WHERE perpetrator_sex = 'Female') AS perpetrator_sex_female_count,
+            COUNT(*) FILTER (WHERE perpetrator_sex = 'Both sexes') AS perpetrator_sex_both_count,
+            COUNT(*) FILTER (WHERE perpetrator_sex = 'Unknown') AS perpetrator_sex_unknown_count,
+            COUNT(*) FILTER (WHERE victim_schooling = 'No schooling/illiterate') AS schooling_none_count,
+            COUNT(*) FILTER (WHERE victim_schooling = 'Grades 1-4 incomplete') AS schooling_grades_1_4_incomplete_count,
+            COUNT(*) FILTER (WHERE victim_schooling = 'Grade 4 complete') AS schooling_grade_4_complete_count,
+            COUNT(*) FILTER (WHERE victim_schooling = 'Grades 5-8 incomplete') AS schooling_grades_5_8_incomplete_count,
+            COUNT(*) FILTER (WHERE victim_schooling = 'Primary education complete') AS schooling_primary_complete_count,
+            COUNT(*) FILTER (WHERE victim_schooling = 'Secondary education incomplete') AS schooling_secondary_incomplete_count,
+            COUNT(*) FILTER (WHERE victim_schooling = 'Secondary education complete') AS schooling_secondary_complete_count,
+            COUNT(*) FILTER (WHERE victim_schooling = 'Higher education incomplete') AS schooling_higher_incomplete_count,
+            COUNT(*) FILTER (WHERE victim_schooling = 'Higher education complete') AS schooling_higher_complete_count,
+            COUNT(*) FILTER (WHERE victim_schooling = 'Not applicable') AS schooling_not_applicable_count,
+            COUNT(*) FILTER (WHERE victim_schooling = 'Unknown') AS schooling_unknown_count,
+            COUNT(*) FILTER (WHERE REL_CONJ = '1') AS relationship_current_spouse_count,
+            COUNT(*) FILTER (WHERE REL_EXCON = '1') AS relationship_former_spouse_count,
+            COUNT(*) FILTER (WHERE REL_NAMO = '1') AS relationship_current_dating_count,
+            COUNT(*) FILTER (WHERE REL_EXNAM = '1') AS relationship_former_dating_count,
+            COUNT(*) FILTER (WHERE REL_PAI = '1') AS relationship_father_count,
+            COUNT(*) FILTER (WHERE REL_MAE = '1') AS relationship_mother_count,
+            COUNT(*) FILTER (WHERE REL_PAD = '1') AS relationship_stepfather_count,
+            COUNT(*) FILTER (WHERE REL_MAD = '1') AS relationship_stepmother_count,
+            COUNT(*) FILTER (WHERE REL_FILHO = '1') AS relationship_child_count,
+            COUNT(*) FILTER (WHERE REL_IRMAO = '1') AS relationship_sibling_count,
+            COUNT(*) FILTER (WHERE REL_CUIDA = '1') AS relationship_caregiver_count,
+            COUNT(*) FILTER (WHERE VIOL_FISIC = '1') AS violence_physical_count,
+            COUNT(*) FILTER (WHERE VIOL_PSICO = '1') AS violence_psychological_count,
+            COUNT(*) FILTER (WHERE VIOL_TORT = '1') AS violence_torture_count,
+            COUNT(*) FILTER (WHERE VIOL_SEXU = '1') AS violence_sexual_count,
+            COUNT(*) FILTER (WHERE VIOL_TRAF = '1') AS violence_trafficking_count,
+            COUNT(*) FILTER (WHERE VIOL_FINAN = '1') AS violence_financial_count,
+            COUNT(*) FILTER (WHERE VIOL_NEGLI = '1') AS violence_neglect_count,
+            COUNT(*) FILTER (WHERE VIOL_INFAN = '1') AS violence_child_labor_count,
+            COUNT(*) FILTER (WHERE VIOL_LEGAL = '1') AS violence_legal_intervention_count,
+            COUNT(*) FILTER (WHERE VIOL_OUTR = '1') AS violence_other_count
+        FROM analytics.fact_sinan_breakdown_memberships
+        GROUP BY 1, 2, 3, 4, 5, 6
+        ORDER BY year, cohort_code, region_name, dimension_name, notification_count DESC, dimension_value
+        """,
+    )
+
     calendar_counts = run_query(
         connection,
         """
@@ -416,6 +474,7 @@ def main():
         "quarterlyCohort": quarterly_cohort,
         "alcoholMonthly": alcohol_monthly,
         "breakdowns": breakdowns,
+        "breakdownInsights": breakdown_insights,
         "calendarCounts": calendar_counts,
         "calendarDays": calendar_days,
         "weekdayCounts": weekday_counts,
@@ -436,7 +495,8 @@ def main():
     print(
         "Wrote dashboard data with "
         f"{len(monthly_cohort)} monthly cohort rows, "
-        f"{len(breakdowns)} breakdown rows, and "
+        f"{len(breakdowns)} breakdown rows, "
+        f"{len(breakdown_insights)} breakdown insight rows, and "
         f"{len(protection_yearly)} protection yearly rows."
     )
 

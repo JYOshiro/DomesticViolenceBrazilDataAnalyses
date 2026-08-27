@@ -5,7 +5,8 @@ const state = {
   to: 2025,
   cohort: 'B',
   region: 'All',
-  dimension: 'Violence type'
+  dimension: 'Violence type',
+  selectedBreakdownValue: null
 };
 
 const cohortLabels = {
@@ -45,6 +46,45 @@ const dimensions = [
   'Repeated violence',
   'Region',
   'State'
+];
+
+const schoolingInsightFields = [
+  ['No schooling/illiterate', 'schooling_none_count'],
+  ['Grades 1-4 incomplete', 'schooling_grades_1_4_incomplete_count'],
+  ['Grade 4 complete', 'schooling_grade_4_complete_count'],
+  ['Grades 5-8 incomplete', 'schooling_grades_5_8_incomplete_count'],
+  ['Primary education complete', 'schooling_primary_complete_count'],
+  ['Secondary education incomplete', 'schooling_secondary_incomplete_count'],
+  ['Secondary education complete', 'schooling_secondary_complete_count'],
+  ['Higher education incomplete', 'schooling_higher_incomplete_count'],
+  ['Higher education complete', 'schooling_higher_complete_count']
+];
+
+const relationshipInsightFields = [
+  ['Current spouse/partner', 'relationship_current_spouse_count'],
+  ['Former spouse/partner', 'relationship_former_spouse_count'],
+  ['Current boyfriend/girlfriend', 'relationship_current_dating_count'],
+  ['Former boyfriend/girlfriend', 'relationship_former_dating_count'],
+  ['Father', 'relationship_father_count'],
+  ['Mother', 'relationship_mother_count'],
+  ['Stepfather', 'relationship_stepfather_count'],
+  ['Stepmother', 'relationship_stepmother_count'],
+  ['Child', 'relationship_child_count'],
+  ['Sibling', 'relationship_sibling_count'],
+  ['Caregiver', 'relationship_caregiver_count']
+];
+
+const violenceInsightFields = [
+  ['Physical violence', 'violence_physical_count'],
+  ['Psychological violence', 'violence_psychological_count'],
+  ['Torture', 'violence_torture_count'],
+  ['Sexual violence', 'violence_sexual_count'],
+  ['Trafficking', 'violence_trafficking_count'],
+  ['Financial/economic violence', 'violence_financial_count'],
+  ['Neglect/abandonment', 'violence_neglect_count'],
+  ['Child labor', 'violence_child_labor_count'],
+  ['Legal intervention', 'violence_legal_intervention_count'],
+  ['Other violence', 'violence_other_count']
 ];
 
 function parseDate(value) {
@@ -93,6 +133,17 @@ function breakdownRows() {
     row.year <= state.to &&
     (state.region === 'All' || row.region_name === state.region) &&
     row.dimension_name === state.dimension
+  );
+}
+
+function breakdownInsightRows() {
+  return (data.breakdownInsights || []).filter(row =>
+    row.cohort_code === state.cohort &&
+    row.year >= state.from &&
+    row.year <= state.to &&
+    (state.region === 'All' || row.region_name === state.region) &&
+    row.dimension_name === state.dimension &&
+    row.dimension_value === state.selectedBreakdownValue
   );
 }
 
@@ -364,6 +415,174 @@ function renderBars(containerId, rows, formatter, captionFormatter) {
   addTooltips(container);
 }
 
+function renderSelectableBreakdownBars(rows, formatter, captionFormatter, onSelect) {
+  const container = document.getElementById('breakdownBars');
+  if (!rows.length) {
+    container.innerHTML = '<p class="empty-state">No data in the selected range.</p>';
+    return;
+  }
+  const max = Math.max(...rows.map(row => row.value), 1);
+  container.innerHTML = rows.map(row => {
+    const caption = captionFormatter(row);
+    const selected = row.label === state.selectedBreakdownValue;
+    const tooltip = `<strong>${escapeHtml(row.label)}</strong><b>${escapeHtml(formatter(row.value))}</b><span>${escapeHtml(caption)}</span>`;
+    return `
+      <button class="bar-row breakdown-bar-row${selected ? ' is-selected' : ''}" type="button"
+        aria-pressed="${selected}" data-breakdown-value="${escapeHtml(row.label)}" data-tooltip="${escapeHtml(tooltip)}">
+        <span>${escapeHtml(row.label)}</span>
+        <span class="bar-track" aria-hidden="true"><span class="bar-value" style="width:${(row.value / max) * 100}%"></span></span>
+        <strong>${escapeHtml(formatter(row.value))}</strong>
+        <small>${escapeHtml(caption)}</small>
+      </button>
+    `;
+  }).join('');
+  addTooltips(container);
+  container.querySelectorAll('.breakdown-bar-row').forEach(button => {
+    button.addEventListener('click', () => onSelect(button.dataset.breakdownValue));
+  });
+}
+
+function aggregateInsightFields(rows, fieldDefinitions) {
+  return fieldDefinitions
+    .map(([label, field]) => ({ label, value: sum(rows, row => Number(row[field]) || 0) }))
+    .sort((a, b) => b.value - a.value || a.label.localeCompare(b.label));
+}
+
+function renderInsightCards(container, cards) {
+  container.innerHTML = cards.map(card => {
+    const valueClass = card.value.length > 18 ? ' is-long-value' : '';
+    return `
+      <article class="insight-card ${card.tone || ''}${card.wide ? ' insight-card-wide' : ''}" role="listitem">
+        <p class="insight-card-label">${escapeHtml(card.label)}</p>
+        <strong class="insight-card-value${valueClass}">${escapeHtml(card.value)}</strong>
+        <p class="insight-card-detail">${escapeHtml(card.detail)}</p>
+        ${card.meta ? `<small class="insight-card-meta">${escapeHtml(card.meta)}</small>` : ''}
+      </article>
+    `;
+  }).join('');
+}
+
+function renderBreakdownInsights(selectedTotal) {
+  const rows = breakdownInsightRows();
+  const container = document.getElementById('breakdownInsightList');
+  const title = document.getElementById('breakdownInsightTitle');
+  const context = document.getElementById('breakdownInsightContext');
+  const limitation = document.getElementById('breakdownInsightLimitation');
+
+  title.textContent = state.selectedBreakdownValue
+    ? `${state.selectedBreakdownValue} profile`
+    : 'Select a category';
+  context.textContent = `${state.from}-${state.to} | ${cohortLabels[state.cohort]} | ${state.region === 'All' ? 'All regions' : state.region}`;
+  limitation.textContent = 'Probable-perpetrator age is not collected in the available SINAN source and is not inferred from victim age.';
+
+  if (!rows.length) {
+    container.innerHTML = '<p class="empty-state insight-card-wide" role="listitem">No profile data matches the selected filters.</p>';
+    return;
+  }
+
+  const selectedCount = sum(rows, row => Number(row.notification_count) || 0);
+  const cards = [
+    {
+      label: 'Selected notifications',
+      value: number.format(selectedCount),
+      detail: `${percent1.format(selectedTotal ? selectedCount / selectedTotal : 0)} of the filtered cohort`,
+      meta: `${state.dimension}: ${state.selectedBreakdownValue}`,
+      tone: 'insight-card-primary',
+      wide: true
+    }
+  ];
+
+  if (state.dimension === 'Victim sex') {
+    const topViolence = aggregateInsightFields(rows, violenceInsightFields)[0];
+    cards.push({
+      label: 'Leading violence type',
+      value: topViolence?.value ? topViolence.label : 'Unavailable',
+      detail: topViolence?.value ? `${number.format(topViolence.value)} mentions` : 'No recorded violence-type mention',
+      meta: 'One notification can include multiple violence types',
+      tone: 'insight-card-victim'
+    });
+  } else {
+    const victimSex = aggregateInsightFields(rows, [
+      ['Female', 'victim_sex_female_count'],
+      ['Male', 'victim_sex_male_count']
+    ]);
+    const knownVictimSex = sum(victimSex, item => item.value);
+    const topVictimSex = victimSex[0];
+    cards.push({
+      label: 'Largest victim sex group',
+      value: topVictimSex?.value ? topVictimSex.label : 'Unavailable',
+      detail: topVictimSex?.value ? `${percent1.format(topVictimSex.value / knownVictimSex)} of known responses` : 'No known victim-sex responses',
+      meta: topVictimSex?.value ? `${number.format(knownVictimSex)} known responses` : '',
+      tone: 'insight-card-victim'
+    });
+  }
+
+  const perpetratorSex = aggregateInsightFields(rows, [
+    ['Male', 'perpetrator_sex_male_count'],
+    ['Female', 'perpetrator_sex_female_count'],
+    ['Both sexes', 'perpetrator_sex_both_count']
+  ]);
+  const knownPerpetratorSex = sum(perpetratorSex, item => item.value);
+  const topPerpetratorSex = perpetratorSex[0];
+  cards.push({
+    label: 'Probable-perpetrator sex',
+    value: topPerpetratorSex?.value ? topPerpetratorSex.label : 'Unavailable',
+    detail: topPerpetratorSex?.value ? `${percent1.format(topPerpetratorSex.value / knownPerpetratorSex)} of known responses` : 'No known probable-perpetrator sex responses',
+    meta: topPerpetratorSex?.value ? `${number.format(knownPerpetratorSex)} known responses` : '',
+    tone: 'insight-card-perpetrator'
+  });
+
+  const ageSum = sum(rows, row => Number(row.victim_age_sum) || 0);
+  const knownAge = sum(rows, row => Number(row.victim_age_known_count) || 0);
+  cards.push({
+    label: 'Mean victim age',
+    value: knownAge ? `${(ageSum / knownAge).toFixed(1)} years` : 'Unavailable',
+    detail: knownAge ? `${percent1.format(knownAge / selectedCount)} valid-age coverage` : 'No valid victim ages',
+    meta: knownAge ? `${number.format(knownAge)} valid ages` : '',
+    tone: 'insight-card-age'
+  });
+
+  const schooling = aggregateInsightFields(rows, schoolingInsightFields);
+  const knownSchooling = sum(schooling, item => item.value);
+  const topSchooling = schooling[0];
+  cards.push({
+    label: 'Leading victim schooling',
+    value: topSchooling?.value ? topSchooling.label : 'Unavailable',
+    detail: topSchooling?.value ? `${percent1.format(topSchooling.value / knownSchooling)} of known responses` : 'No known victim-schooling responses',
+    meta: topSchooling?.value ? `${number.format(knownSchooling)} known responses` : '',
+    tone: 'insight-card-schooling'
+  });
+
+  const relationships = aggregateInsightFields(rows, relationshipInsightFields)
+    .filter(item => state.dimension !== 'Aggressor relationship' || item.label !== state.selectedBreakdownValue);
+  const topRelationship = relationships[0];
+  if (state.dimension === 'Aggressor relationship') {
+    cards.push({
+      label: 'Most common additional relationship',
+      value: topRelationship?.value ? topRelationship.label : 'None recorded',
+      detail: topRelationship?.value
+        ? `${number.format(topRelationship.value)} mentions · ${percent1.format(topRelationship.value / selectedCount)} of selected notifications`
+        : 'No additional relationship was recorded',
+      meta: topRelationship?.value
+        ? `Among ${number.format(selectedCount)} notifications recording a ${state.selectedBreakdownValue.toLowerCase()}, this was the most common other co-recorded probable-aggressor relationship.`
+        : '',
+      tone: 'insight-card-relationship',
+      wide: true
+    });
+  } else {
+    cards.push({
+      label: 'Leading aggressor relationship',
+      value: topRelationship?.value ? topRelationship.label : 'Unavailable',
+      detail: topRelationship?.value ? `${number.format(topRelationship.value)} mentions` : 'No recorded aggressor relationship',
+      meta: 'Relationship counts are mention-based',
+      tone: 'insight-card-relationship',
+      wide: true
+    });
+  }
+
+  renderInsightCards(container, cards);
+}
+
 function renderOverview() {
   const allRows = monthlyRowsFor('A');
   const domesticRows = monthlyRowsFor('B');
@@ -477,7 +696,7 @@ function renderAlcohol() {
   );
 }
 
-function renderBreakdowns() {
+function renderBreakdowns({ focusSelected = false } = {}) {
   const rows = breakdownRows();
   const totals = aggregate(rows, row => row.dimension_value, row => row.notification_count);
   const ranking = [...totals.entries()]
@@ -487,28 +706,29 @@ function renderBreakdowns() {
   const selectedTotal = sum(monthlyRowsFor(state.cohort), row => row.notification_count);
   const baseTotal = selectedTotal || 1;
   const topCategory = ranking[0];
-  renderBars('breakdownBars', ranking, value => compact.format(value), row => `${percent1.format(row.value / baseTotal)} of selected cohort`);
-  setText('breakdownTitle', state.dimension);
-  setText(
-    'breakdownCalculationNote',
-    topCategory && selectedTotal
-      ? `Out of ${number.format(selectedTotal)} selected SINAN notifications, ${percent1.format(topCategory.value / selectedTotal)} (${number.format(topCategory.value)}) are recorded as ${topCategory.label} in this ${state.dimension.toLowerCase()} breakdown.`
-      : 'No notifications match the selected filters.'
+  if (!ranking.some(row => row.label === state.selectedBreakdownValue)) {
+    state.selectedBreakdownValue = topCategory?.label || null;
+  }
+  renderSelectableBreakdownBars(
+    ranking,
+    value => compact.format(value),
+    row => `${percent1.format(row.value / baseTotal)} of selected cohort`,
+    value => {
+      state.selectedBreakdownValue = value;
+      renderBreakdowns({ focusSelected: true });
+    }
   );
+  if (focusSelected) {
+    document.querySelector('.breakdown-bar-row.is-selected')?.focus();
+  }
+  setText('breakdownTitle', state.dimension);
   setText(
     'breakdownCaption',
     state.dimension === 'Violence type' || state.dimension === 'Aggressor relationship'
       ? 'These are mention-based counts. A single notification can contribute to more than one category.'
       : 'These counts represent notifications in the selected cohort and years.'
   );
-  setText('breakdownCohortNote', `Cohort: ${cohortLabels[state.cohort]}.`);
-  setText('breakdownRegionNote', `Region filter: ${state.region === 'All' ? 'all Brazilian regions combined' : state.region}.`);
-  setText(
-    'breakdownMentionNote',
-    state.dimension === 'Violence type' || state.dimension === 'Aggressor relationship'
-      ? 'Totals can exceed the number of notifications because categories are mention-based.'
-      : 'Shares are calculated against the selected cohort total, not against the subtotal of the displayed top eight categories.'
-  );
+  renderBreakdownInsights(selectedTotal);
 }
 
 function renderCalendar() {
@@ -804,6 +1024,7 @@ function setupControls() {
 
   dimension.addEventListener('change', () => {
     state.dimension = dimension.value;
+    state.selectedBreakdownValue = null;
     render();
   });
 

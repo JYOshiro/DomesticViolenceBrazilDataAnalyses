@@ -19,6 +19,10 @@ The public URL is emitted in each workflow run after CloudFront deployment. A cu
 
 The live site uses the checked-in aggregate files in `dashboard/data/`; it does not publish the local DuckDB database. To refresh them locally, run `work/export_dashboard_data.py` against the project database. The exporter applies `work/create_capstone_dashboard_views.sql` first.
 
+Section 3 uses aggregated conditional profiles keyed by year, cohort, region, breakdown dimension, and breakdown value. Selecting a bar shows filter-aware victim, probable-perpetrator, age, schooling, and relationship insights without publishing row-level SINAN records. Probable-perpetrator age is not available in the supplied SINAN schema and is therefore not estimated.
+
+After a refresh, validate the breakdown/profile grain and categorical reconciliations with `node work/validate_breakdown_insights.js`.
+
 ## Vigitel comparability
 
 The dashboard deliberately displays a gap for 2022 because no Vigitel collection occurred. It also displays the legacy current-drinking indicator as unavailable for 2024: the supplied 2024 data does not populate the prior 30-day source field, and the available past-12-month and frequency fields are not substituted as though they were comparable.
