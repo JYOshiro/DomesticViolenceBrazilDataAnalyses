@@ -1,0 +1,356 @@
+window.PREDICTION_DATA = {
+  "meta": {
+    "sourceFile": "DayPrediction_Filtered_Holidays_daily_model_202608311605.csv",
+    "outcome": "Daily domestic/family SINAN health-service notifications",
+    "model": "Random forest regression",
+    "forecastHorizon": "One day ahead using calendar fields and notification volumes available through the prior day",
+    "trainStart": "2012-01-29",
+    "trainEnd": "2024-12-31",
+    "testStart": "2025-01-01",
+    "testEnd": "2025-12-31",
+    "highVolumeDefinition": "Top 20% of days within the chronological 2025 holdout, evaluated by rank",
+    "limitations": [
+      "This predicts recorded SINAN notification volume, not the occurrence of violence.",
+      "The holdout is chronological; 2025 was not used to fit the model.",
+      "Feature importance describes this model's predictive use of a variable and is not causal evidence.",
+      "Reporting-system and service-use changes can reduce performance when future conditions differ from the training period."
+    ]
+  },
+  "metrics": {
+    "mae": 67.98558829623013,
+    "rmse": 93.7209869413044,
+    "r2": 0.7998569380687988,
+    "meanActual": 655.3123287671233,
+    "baselineMae": 71.41369863013699,
+    "baselineRmse": 110.46839255381902,
+    "maeImprovementPct": 0.04800353993232575,
+    "actualThreshold": 830.2,
+    "predictedThreshold": 773.2665264502162,
+    "precision": 0.6986301369863014,
+    "recall": 0.6986301369863014,
+    "accuracy": 0.8794520547945206,
+    "actualHighDays": 73,
+    "predictedHighDays": 73,
+    "baselineHighVolumePrecision": 0.6712328767123288,
+    "baselineHighVolumeRecall": 0.6712328767123288
+  },
+  "weekly": [
+    {
+      "week": "2024-12-30",
+      "actual": 2979.0,
+      "predicted": 2740.946751530822
+    },
+    {
+      "week": "2025-01-06",
+      "actual": 4631.0,
+      "predicted": 4450.395343094813
+    },
+    {
+      "week": "2025-01-13",
+      "actual": 4701.0,
+      "predicted": 4584.973746741169
+    },
+    {
+      "week": "2025-01-20",
+      "actual": 5062.0,
+      "predicted": 4688.320943018094
+    },
+    {
+      "week": "2025-01-27",
+      "actual": 5107.0,
+      "predicted": 4780.140425702076
+    },
+    {
+      "week": "2025-02-03",
+      "actual": 5003.0,
+      "predicted": 4755.109755150405
+    },
+    {
+      "week": "2025-02-10",
+      "actual": 5518.0,
+      "predicted": 4888.084835497837
+    },
+    {
+      "week": "2025-02-17",
+      "actual": 5542.0,
+      "predicted": 4956.247457975358
+    },
+    {
+      "week": "2025-02-24",
+      "actual": 5308.0,
+      "predicted": 4613.324223282273
+    },
+    {
+      "week": "2025-03-03",
+      "actual": 4176.0,
+      "predicted": 4474.353798784548
+    },
+    {
+      "week": "2025-03-10",
+      "actual": 4986.0,
+      "predicted": 4547.416323678935
+    },
+    {
+      "week": "2025-03-17",
+      "actual": 5120.0,
+      "predicted": 4631.273764718615
+    },
+    {
+      "week": "2025-03-24",
+      "actual": 5232.0,
+      "predicted": 4953.025087284939
+    },
+    {
+      "week": "2025-03-31",
+      "actual": 4966.0,
+      "predicted": 4746.551519619269
+    },
+    {
+      "week": "2025-04-07",
+      "actual": 4910.0,
+      "predicted": 4705.616636297854
+    },
+    {
+      "week": "2025-04-14",
+      "actual": 4420.0,
+      "predicted": 4483.718094282514
+    },
+    {
+      "week": "2025-04-21",
+      "actual": 4297.0,
+      "predicted": 4467.283175139567
+    },
+    {
+      "week": "2025-04-28",
+      "actual": 4069.0,
+      "predicted": 4195.863508078033
+    },
+    {
+      "week": "2025-05-05",
+      "actual": 4769.0,
+      "predicted": 4634.555002191274
+    },
+    {
+      "week": "2025-05-12",
+      "actual": 4542.0,
+      "predicted": 4562.891512961059
+    },
+    {
+      "week": "2025-05-19",
+      "actual": 4611.0,
+      "predicted": 4493.9166518194215
+    },
+    {
+      "week": "2025-05-26",
+      "actual": 4534.0,
+      "predicted": 4553.077699578201
+    },
+    {
+      "week": "2025-06-02",
+      "actual": 4638.0,
+      "predicted": 4658.810236617956
+    },
+    {
+      "week": "2025-06-09",
+      "actual": 4428.0,
+      "predicted": 4448.512358075259
+    },
+    {
+      "week": "2025-06-16",
+      "actual": 4019.0,
+      "predicted": 4190.577101720339
+    },
+    {
+      "week": "2025-06-23",
+      "actual": 4558.0,
+      "predicted": 4561.528176837053
+    },
+    {
+      "week": "2025-06-30",
+      "actual": 4640.0,
+      "predicted": 4614.339503601955
+    },
+    {
+      "week": "2025-07-07",
+      "actual": 4506.0,
+      "predicted": 4526.247862897234
+    },
+    {
+      "week": "2025-07-14",
+      "actual": 4577.0,
+      "predicted": 4524.0667023022725
+    },
+    {
+      "week": "2025-07-21",
+      "actual": 4736.0,
+      "predicted": 4604.967333666334
+    },
+    {
+      "week": "2025-07-28",
+      "actual": 4738.0,
+      "predicted": 4585.904972943723
+    },
+    {
+      "week": "2025-08-04",
+      "actual": 4955.0,
+      "predicted": 4679.752434508955
+    },
+    {
+      "week": "2025-08-11",
+      "actual": 4968.0,
+      "predicted": 4769.435773048195
+    },
+    {
+      "week": "2025-08-18",
+      "actual": 5481.0,
+      "predicted": 4866.201775826951
+    },
+    {
+      "week": "2025-08-25",
+      "actual": 5497.0,
+      "predicted": 4918.751431518483
+    },
+    {
+      "week": "2025-09-01",
+      "actual": 5134.0,
+      "predicted": 4798.4392754218
+    },
+    {
+      "week": "2025-09-08",
+      "actual": 5369.0,
+      "predicted": 4908.504943942169
+    },
+    {
+      "week": "2025-09-15",
+      "actual": 5244.0,
+      "predicted": 5010.339658901227
+    },
+    {
+      "week": "2025-09-22",
+      "actual": 5174.0,
+      "predicted": 4803.133553096903
+    },
+    {
+      "week": "2025-09-29",
+      "actual": 5154.0,
+      "predicted": 4940.223043141988
+    },
+    {
+      "week": "2025-10-06",
+      "actual": 5082.0,
+      "predicted": 4794.154024969473
+    },
+    {
+      "week": "2025-10-13",
+      "actual": 4943.0,
+      "predicted": 4882.740410367409
+    },
+    {
+      "week": "2025-10-20",
+      "actual": 4660.0,
+      "predicted": 4746.491715300384
+    },
+    {
+      "week": "2025-10-27",
+      "actual": 4380.0,
+      "predicted": 4405.482617911502
+    },
+    {
+      "week": "2025-11-03",
+      "actual": 4471.0,
+      "predicted": 4422.959842129112
+    },
+    {
+      "week": "2025-11-10",
+      "actual": 4424.0,
+      "predicted": 4582.90746807539
+    },
+    {
+      "week": "2025-11-17",
+      "actual": 3806.0,
+      "predicted": 4251.167044351728
+    },
+    {
+      "week": "2025-11-24",
+      "actual": 4250.0,
+      "predicted": 4362.790230897534
+    },
+    {
+      "week": "2025-12-01",
+      "actual": 3794.0,
+      "predicted": 4399.434426341959
+    },
+    {
+      "week": "2025-12-08",
+      "actual": 3030.0,
+      "predicted": 4003.8525156177147
+    },
+    {
+      "week": "2025-12-15",
+      "actual": 2295.0,
+      "predicted": 3334.080944909666
+    },
+    {
+      "week": "2025-12-22",
+      "actual": 1317.0,
+      "predicted": 3236.4617060984765
+    },
+    {
+      "week": "2025-12-29",
+      "actual": 438.0,
+      "predicted": 1273.163185714286
+    }
+  ],
+  "featureImportance": [
+    {
+      "feature": "dv_reports_previous_week",
+      "label": "Same weekday last week",
+      "importance": 0.656738472518762
+    },
+    {
+      "feature": "dv_reports_previous_4_weeks",
+      "label": "Same weekday four weeks earlier",
+      "importance": 0.2278921218490833
+    },
+    {
+      "feature": "dv_reports_previous_day",
+      "label": "Previous day volume",
+      "importance": 0.04569741741596959
+    },
+    {
+      "feature": "days_since_start",
+      "label": "Long-term time trend",
+      "importance": 0.03114220072523178
+    },
+    {
+      "feature": "is_calendar_event",
+      "label": "Calendar event",
+      "importance": 0.013483457760822775
+    },
+    {
+      "feature": "is_national_holiday",
+      "label": "National holiday",
+      "importance": 0.007375511081745477
+    },
+    {
+      "feature": "day_of_week_number",
+      "label": "Day of week",
+      "importance": 0.0071491798115996
+    },
+    {
+      "feature": "month_number",
+      "label": "Month",
+      "importance": 0.005822387054267067
+    },
+    {
+      "feature": "is_weekend",
+      "label": "Weekend",
+      "importance": 0.0031996875535369616
+    },
+    {
+      "feature": "quarter_number",
+      "label": "Quarter",
+      "importance": 0.0014995642289814192
+    }
+  ]
+};

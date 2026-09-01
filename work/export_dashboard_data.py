@@ -1,17 +1,25 @@
 import json
 import math
+import csv
+import os
 from pathlib import Path
 
 import duckdb
 
 WORK_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = WORK_DIR.parent
+COURSE_DIR = WORK_DIR.parents[2]
 DATABASE = Path(
-    r"C:\Users\jessi\iCloudDrive\Master - MBA\2026_T2_DATA6000\Python-analyses\banco_disque100.duckdb"
+    os.environ.get(
+        "CAPSTONE_DATABASE",
+        r"C:\Users\jessi\iCloudDrive\Master - MBA\2026_T2_DATA6000\Python-analyses\banco_disque100.duckdb",
+    )
 )
 VIEWS_SQL = WORK_DIR / "create_capstone_dashboard_views.sql"
 OUTPUT = PROJECT_DIR / "dashboard" / "data" / "dashboard-data.json"
 SCRIPT_OUTPUT = PROJECT_DIR / "dashboard" / "data" / "dashboard-data.js"
+LIGUE180_SOURCE = COURSE_DIR / "ligue180_2012_2019_official_annual_counts.csv"
+PUBLIC_DATABASE_LABEL = "Python-analyses/banco_disque100.duckdb"
 
 COHORT_DEFINITIONS = [
     {
@@ -48,6 +56,31 @@ def json_safe(value):
 
 def run_query(connection, query):
     return records(connection.sql(query))
+
+
+def read_ligue180_series():
+    numeric_fields = {
+        "year",
+        "ligue180_total_contacts",
+        "ligue180_violence_reports",
+        "ligue180_formal_complaints",
+        "ligue180_violence_related_total_recommended",
+        "domestic_family_violence_count",
+        "domestic_family_violence_pct",
+    }
+    rows = []
+    with LIGUE180_SOURCE.open(encoding="utf-8-sig", newline="") as source:
+        for row in csv.DictReader(source):
+            parsed = {}
+            for key, value in row.items():
+                if key in numeric_fields:
+                    parsed[key] = float(value) if value else None
+                    if key == "year" and parsed[key] is not None:
+                        parsed[key] = int(parsed[key])
+                else:
+                    parsed[key] = value
+            rows.append(parsed)
+    return rows
 
 
 def main():
@@ -392,6 +425,105 @@ def main():
         """,
     )
 
+    protection_profiles = run_query(
+        connection,
+        """
+        WITH profiles AS (
+            SELECT
+                'Suspect gender' AS dimension_name,
+                CASE
+                    WHEN UPPER(suspect_gender) LIKE 'FEMIN%' THEN 'Female'
+                    WHEN UPPER(suspect_gender) LIKE 'MASC%' THEN 'Male'
+                    ELSE 'Unknown/other'
+                END AS dimension_value
+            FROM main.crimes_violencia_domestica
+
+            UNION ALL
+
+            SELECT
+                'Victim gender',
+                CASE
+                    WHEN UPPER(victim_gender) LIKE 'FEMIN%' THEN 'Female'
+                    WHEN UPPER(victim_gender) LIKE 'MASC%' THEN 'Male'
+                    ELSE 'Unknown/other'
+                END
+            FROM main.crimes_violencia_domestica
+
+            UNION ALL
+
+            SELECT
+                'Suspect relationship',
+                CASE
+                    WHEN LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) = 'mae' THEN 'Mother'
+                    WHEN LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) = 'pai' THEN 'Father'
+                    WHEN LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) LIKE 'filho%' THEN 'Child'
+                    WHEN LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) LIKE 'irmao%' THEN 'Sibling'
+                    WHEN LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) = 'padrasto' THEN 'Stepfather'
+                    WHEN LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) = 'madrasta' THEN 'Stepmother'
+                    WHEN LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) LIKE 'neto%' THEN 'Grandchild'
+                    WHEN LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) IN ('avo', 'avó') THEN 'Grandparent'
+                    WHEN LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) LIKE 'tio%' THEN 'Aunt/uncle'
+                    WHEN LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) LIKE 'sobrinho%' THEN 'Niece/nephew'
+                    WHEN LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) LIKE '%companheiro%'
+                      OR LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) LIKE '%marido%'
+                      OR LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) LIKE '%namorado%'
+                      OR LOWER(STRIP_ACCENTS(victim_suspect_relationship_normalized)) LIKE '%conjuge%'
+                      THEN 'Current/former partner'
+                    WHEN victim_suspect_relationship_normalized IS NULL THEN 'Unknown/other'
+                    ELSE 'Other relationship'
+                END
+            FROM main.crimes_violencia_domestica
+
+            UNION ALL
+
+            SELECT
+                'Violation group',
+                CASE
+                    WHEN LOWER(STRIP_ACCENTS(violation_type)) LIKE '%neglig%' THEN 'Neglect'
+                    WHEN LOWER(STRIP_ACCENTS(violation_type)) LIKE '%psiqu%' THEN 'Psychological integrity'
+                    WHEN LOWER(STRIP_ACCENTS(violation_type)) LIKE '%fisic%' THEN 'Physical integrity'
+                    WHEN LOWER(STRIP_ACCENTS(violation_type)) LIKE '%sexual%' THEN 'Sexual violence'
+                    WHEN LOWER(STRIP_ACCENTS(violation_type)) LIKE '%patrimon%' THEN 'Property/economic'
+                    WHEN violation_type IS NULL THEN 'Unknown/other'
+                    ELSE 'Other violation'
+                END
+            FROM main.crimes_violencia_domestica
+        )
+        SELECT dimension_name, dimension_value, COUNT(*) AS record_count
+        FROM profiles
+        GROUP BY 1, 2
+        ORDER BY 1, 3 DESC, 2
+        """,
+    )
+
+    ligue180_series = read_ligue180_series()
+    reporting_method_changes = [
+        {
+            "year": 2014,
+            "title": "Ligue 180 became a formal complaint channel",
+            "detail": "From March 2014, the service moved beyond guidance and began receiving formal complaints.",
+            "source": LIGUE180_SOURCE.name,
+        },
+        {
+            "year": 2017,
+            "title": "Reports and formal complaints were separated",
+            "detail": "The official balance reports the two contact types separately, creating a break from earlier totals.",
+            "source": LIGUE180_SOURCE.name,
+        },
+        {
+            "year": 2018,
+            "title": "Non-formal violence reports were converted",
+            "detail": "After 12 June, non-formal reports were converted into formal complaints; the before-and-after categories should not be treated as identical.",
+            "source": LIGUE180_SOURCE.name,
+        },
+        {
+            "year": 2020,
+            "title": "Combined protection extract changes scale around 2020-21",
+            "detail": "The source-row series rises sharply from 2021 and continues at a different scale. With no stable report identifier or validated Disque 100/Ligue 180 split, the pre/post series is not treated as directly comparable.",
+            "source": "main.crimes_violencia_domestica",
+        },
+    ]
+
     vigitel = run_query(
         connection,
         """
@@ -460,7 +592,7 @@ def main():
             "refreshTimestamp": connection.sql(
                 "SELECT CAST(CURRENT_TIMESTAMP AS VARCHAR)"
             ).fetchone()[0],
-            "database": str(DATABASE),
+            "database": PUBLIC_DATABASE_LABEL,
             "coverage": coverage,
             "cohortDefinitions": COHORT_DEFINITIONS,
             "notes": [
@@ -483,6 +615,9 @@ def main():
         "protectionYearly": protection_yearly,
         "protectionViolations": protection_violations,
         "protectionChannels": protection_channels,
+        "protectionProfiles": protection_profiles,
+        "ligue180Official": ligue180_series,
+        "reportingMethodChanges": reporting_method_changes,
         "vigitel": vigitel,
         "ambev": ambev,
         "policyEvents": policy_events,

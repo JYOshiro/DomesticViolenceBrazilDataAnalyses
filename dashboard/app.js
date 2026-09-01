@@ -1,4 +1,5 @@
 const data = window.DASHBOARD_DATA;
+const prediction = window.PREDICTION_DATA;
 
 const state = {
   from: 2012,
@@ -6,7 +7,8 @@ const state = {
   cohort: 'B',
   region: 'All',
   dimension: 'Violence type',
-  selectedBreakdownValue: null
+  selectedBreakdownValue: null,
+  protectionDimension: 'Suspect gender'
 };
 
 const cohortLabels = {
@@ -175,15 +177,15 @@ function holidayRows() {
 }
 
 function protectionRows() {
-  return data.protectionYearly.filter(row => row.year >= state.from && row.year <= Math.min(state.to, 2026));
+  return data.protectionYearly.filter(row => row.year <= 2026);
 }
 
 function violationRows() {
-  return data.protectionViolations.filter(row => row.year >= state.from && row.year <= Math.min(state.to, 2026));
+  return data.protectionViolations.filter(row => row.year <= 2026);
 }
 
 function channelRows() {
-  return data.protectionChannels.filter(row => row.year >= state.from && row.year <= Math.min(state.to, 2026));
+  return data.protectionChannels.filter(row => row.year <= 2026);
 }
 
 function quarterlyRows() {
@@ -197,7 +199,7 @@ function quarterlyRows() {
 function ambevAnnualRows() {
   const annual = new Map();
   data.ambev
-    .filter(row => row.year >= state.from && row.year <= state.to)
+    .filter(row => row.year >= 2012 && row.year <= 2026)
     .forEach(row => {
       const current = annual.get(row.year) || { year: row.year, beerVolume: 0, taxTotal: 0, taxCount: 0 };
       current.beerVolume += row.beer_volume_sold_000_hl || 0;
@@ -213,7 +215,7 @@ function ambevAnnualRows() {
 }
 
 function vigitelRows() {
-  return data.vigitel.filter(row => row.year >= state.from && row.year <= state.to);
+  return data.vigitel.filter(row => row.year >= 2012);
 }
 
 function calendarDayMap() {
@@ -364,6 +366,16 @@ function lineChart(element, config) {
     }).join(' ');
     return `<path class="${series.className}" d="${path}"></path>`;
   }).join('');
+  const breakBand = config.breakRange ? (() => {
+    const start = Math.max(0, config.breakRange.startIndex);
+    const end = Math.min(config.labels.length - 1, config.breakRange.endIndex);
+    const step = (width - pad.left - pad.right) / Math.max(config.labels.length - 1, 1);
+    const left = Math.max(pad.left, x(start) - step / 2);
+    const right = Math.min(width - pad.right, x(end) + step / 2);
+    return `<rect class="method-break-band" x="${left}" y="${pad.top}" width="${right - left}" height="${height - pad.top - pad.bottom}"></rect>
+      <line class="method-break-line" x1="${x(start)}" y1="${pad.top}" x2="${x(start)}" y2="${height - pad.bottom}"></line>
+      <text class="method-break-label" x="${left + 8}" y="${pad.top + 16}">${escapeHtml(config.breakRange.label)}</text>`;
+  })() : '';
   const markers = policyMarkerLayer(config.timelineDates, x, pad, height);
   const points = config.series.flatMap((series, seriesIndex) => series.values.map((value, idx) => {
     if (!Number.isFinite(value)) return '';
@@ -387,7 +399,7 @@ function lineChart(element, config) {
     <span class="series-key"><i class="${series.className}"></i>${escapeHtml(series.label || `Series ${index + 1}`)}</span>`).join('')}
   </p>`;
   element.innerHTML = `${fullscreenHeader}${fullscreenSeriesLegend}${policyLegend}<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${config.title}">
-    ${grid}${ticks}${lines}${points}${markers}
+    ${breakBand}${grid}${ticks}${lines}${points}${markers}
   </svg>`;
   addTooltips(element);
   enableChartFullscreen(element, config.title);
@@ -802,6 +814,130 @@ function renderProtection() {
   renderBars('protectionChannelBars', channelRanking, value => compact.format(value));
 }
 
+function renderFirstTest() {
+  const protection = (data.protectionYearly || [])
+    .filter(row => row.year >= 2012 && row.year <= 2025)
+    .sort((a, b) => a.year - b.year);
+  const ambev = ambevAnnualRows().filter(row => row.year >= 2012 && row.year <= 2025);
+  const protectionMap = new Map(protection.map(row => [row.year, row.report_count]));
+  const ambevMap = new Map(ambev.map(row => [row.year, row.beerVolume]));
+  const years = [...protectionMap.keys()].filter(year => ambevMap.has(year)).sort((a, b) => a - b);
+  const baseProtection = protectionMap.get(years[0]) || 1;
+  const baseAmbev = ambevMap.get(years[0]) || 1;
+
+  lineChart(document.getElementById('firstTestChart'), {
+    title: 'Indexed annual Ambev beer volume and protection-report source rows',
+    labels: years.map(String),
+    tooltipLabels: years.map(String),
+    tooltipFormatter: value => `Index: ${value.toFixed(1)}`,
+    series: [
+      { label: 'Ambev Brazil beer volume', className: 'line-gold', values: years.map(year => (ambevMap.get(year) / baseAmbev) * 100) },
+      { label: 'Protection-report source rows', className: 'line-secondary', values: years.map(year => (protectionMap.get(year) / baseProtection) * 100) }
+    ]
+  });
+}
+
+function protectionProfileRows(dimension = state.protectionDimension) {
+  return (data.protectionProfiles || [])
+    .filter(row => row.dimension_name === dimension)
+    .sort((a, b) => b.record_count - a.record_count || a.dimension_value.localeCompare(b.dimension_value));
+}
+
+function renderProtectionProfile() {
+  const suspectGender = protectionProfileRows('Suspect gender');
+  const female = suspectGender.find(row => row.dimension_value === 'Female')?.record_count || 0;
+  const male = suspectGender.find(row => row.dimension_value === 'Male')?.record_count || 0;
+  const relationship = protectionProfileRows('Suspect relationship');
+  const knownRelationships = sum(relationship.filter(row => row.dimension_value !== 'Unknown/other'), row => row.record_count);
+  const mother = relationship.find(row => row.dimension_value === 'Mother')?.record_count || 0;
+  setText('femaleSuspectShare', percent1.format((female + male) ? female / (female + male) : 0));
+  setText('motherRelationshipShare', percent1.format(knownRelationships ? mother / knownRelationships : 0));
+
+  const rows = protectionProfileRows();
+  const shown = state.protectionDimension === 'Suspect relationship' ? rows.slice(0, 9) : rows;
+  setText('protectionProfileTitle', state.protectionDimension);
+  renderBars(
+    'protectionProfileBars',
+    shown.map(row => ({ label: row.dimension_value, value: row.record_count })),
+    value => compact.format(value),
+    row => `${number.format(row.value)} source rows`
+  );
+}
+
+function renderReportingBreak() {
+  const rows = (data.protectionYearly || []).filter(row => row.year <= 2025).sort((a, b) => a.year - b.year);
+  const value2020 = rows.find(row => row.year === 2020)?.report_count || 0;
+  const value2021 = rows.find(row => row.year === 2021)?.report_count || 0;
+  setText('reportingJumpMetric', value2020 ? percent1.format((value2021 - value2020) / value2020) : 'N/A');
+  const labels = rows.map(row => String(row.year));
+  lineChart(document.getElementById('reportingBreakChart'), {
+    title: 'Annual protection-report source rows with a 2020-21 comparability break',
+    labels,
+    tooltipLabels: labels,
+    breakRange: {
+      startIndex: labels.indexOf('2020'),
+      endIndex: labels.indexOf('2021'),
+      label: '2020–21 method break'
+    },
+    series: [{ label: 'Protection-report source rows', className: 'line-secondary', values: rows.map(row => row.report_count) }]
+  });
+
+  document.getElementById('methodChangeList').innerHTML = (data.reportingMethodChanges || []).map(change => `
+    <article class="method-change-card">
+      <time datetime="${escapeHtml(String(change.year))}">${escapeHtml(change.year)}</time>
+      <strong>${escapeHtml(change.title)}</strong>
+      <p>${escapeHtml(change.detail)}</p>
+    </article>
+  `).join('');
+}
+
+function renderVigitelSample() {
+  const sourceRows = data.vigitel || [];
+  const sourceMap = new Map(sourceRows.map(row => [row.year, row.record_count]));
+  const years = Array.from({ length: 13 }, (_, index) => 2012 + index);
+  lineChart(document.getElementById('vigitelSampleChart'), {
+    title: 'Annual Vigitel sample size',
+    labels: years.map(String),
+    tooltipLabels: years.map(String),
+    series: [{ label: 'Survey records', className: 'line-secondary', values: years.map(year => sourceMap.has(year) ? sourceMap.get(year) : null) }]
+  });
+}
+
+function renderPrediction() {
+  if (!prediction) {
+    document.getElementById('prediction').innerHTML = '<p class="empty-state">Prediction results are unavailable.</p>';
+    return;
+  }
+  const metrics = prediction.metrics;
+  setText('predictionMae', metrics.mae.toFixed(1));
+  setText('predictionBaseline', metrics.baselineMae.toFixed(1));
+  setText('predictionR2', metrics.r2.toFixed(2));
+  setText('predictionHighRecall', percent1.format(metrics.recall));
+
+  lineChart(document.getElementById('predictionChart'), {
+    title: 'Weekly actual and predicted notifications in the 2025 holdout',
+    labels: prediction.weekly.map((row, index) => index % 8 === 0 ? row.week.slice(5) : ''),
+    tooltipLabels: prediction.weekly.map(row => `Week of ${row.week}`),
+    series: [
+      { label: 'Actual notifications', className: 'line-main', values: prediction.weekly.map(row => row.actual) },
+      { label: 'Predicted notifications', className: 'line-gold', values: prediction.weekly.map(row => row.predicted) }
+    ]
+  });
+
+  renderBars(
+    'featureImportanceBars',
+    prediction.featureImportance.slice(0, 7).map(row => ({ label: row.label, value: row.importance })),
+    value => percent1.format(value)
+  );
+  setText(
+    'predictionTakeaway',
+    `On the untouched 2025 holdout, the model's daily MAE was ${metrics.mae.toFixed(1)} notifications versus ${metrics.baselineMae.toFixed(1)} for the same-weekday-last-week baseline—a modest ${percent1.format(metrics.maeImprovementPct)} improvement. It identified ${percent1.format(metrics.recall)} of the highest-volume 20% of days by rank.`
+  );
+  document.getElementById('predictionLimitations').innerHTML = prediction.meta.limitations
+    .map(item => `<li>${escapeHtml(item)}</li>`)
+    .join('');
+}
+
 function renderContext() {
   const quarterly = quarterlyRows();
   const quarterlyMap = aggregate(quarterly, row => row.year_quarter, row => row.notification_count);
@@ -881,7 +1017,7 @@ function renderMethods() {
   );
   setText(
     'refreshNote',
-    `Dashboard snapshot exported on ${data.meta.refreshTimestamp}. DuckDB file: ${data.meta.database}`
+    `Dashboard snapshot exported on ${data.meta.refreshTimestamp}. Source snapshot: ${data.meta.database}`
   );
   document.getElementById('cohortDefinitions').innerHTML = data.meta.cohortDefinitions.map(def => `
     <article class="definition-card">
@@ -900,14 +1036,28 @@ function renderMethods() {
 }
 
 function render() {
+  renderFirstTest();
+  renderProtectionProfile();
+  renderReportingBreak();
   renderOverview();
   renderAlcohol();
   renderBreakdowns();
   renderCalendar();
   renderProtection();
   renderContext();
+  renderVigitelSample();
   renderPolicyTimeline();
+  renderPrediction();
   renderMethods();
+}
+
+function setupStoryControls() {
+  const protectionDimension = document.getElementById('protectionDimensionSelect');
+  protectionDimension.value = state.protectionDimension;
+  protectionDimension.addEventListener('change', () => {
+    state.protectionDimension = protectionDimension.value;
+    renderProtectionProfile();
+  });
 }
 
 function setupControls() {
@@ -1080,6 +1230,7 @@ function setupControls() {
 }
 
 if (data) {
+  setupStoryControls();
   setupControls();
   render();
 } else {

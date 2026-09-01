@@ -3,442 +3,129 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#112b33" />
-    <title>Alcohol and Recorded Domestic Violence in Brazil</title>
+    <meta name="theme-color" content="#0d151b" />
+    <meta name="description" content="An evidence-led investigation of alcohol, reporting systems, and recorded domestic violence in Brazil." />
+    <title>From Why to When | Recorded Domestic Violence in Brazil</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="masthead">
-      <a class="brand" href="#overview">Alcohol &amp; Recorded Violence</a>
-      <p class="strap">Brazil capstone dashboard built from SINAN, protection-reporting, Vigitel, and Ambev data</p>
-      <nav aria-label="Dashboard sections">
-        <a href="#overview">Overview</a>
-        <a href="#alcohol">Alcohol</a>
-        <a href="#breakdowns">Breakdowns</a>
-        <a href="#calendar">Calendar</a>
-        <a href="#protection">Protection</a>
-        <a href="#context">Context</a>
-        <a href="#policy">Policy timeline</a>
-        <a href="#methods">Methods</a>
+      <a class="brand" href="#overview">From Why to When</a>
+      <p class="strap">An evidence-led investigation of alcohol and recorded domestic violence in Brazil</p>
+      <nav aria-label="Investigation chapters">
+        <a href="#overview">Question</a><a href="#first-tests">First tests</a><a href="#direct-test">Direct test</a>
+        <a href="#context">Behaviour &amp; tax</a><a href="#timing">Timing</a><a href="#prediction">Prediction</a>
       </nav>
     </header>
 
     <main>
       <section class="hero" id="overview">
-        <p class="eyebrow">CAPSTONE DASHBOARD / BRAZIL</p>
+        <p class="eyebrow">CAPSTONE INVESTIGATION / BRAZIL / 2012–2026</p>
         <div class="hero-grid">
           <div>
-            <h1>Recorded violence, alcohol indication, and reporting context.</h1>
-            <p class="lede">
-              What can be observed in SINAN notifications, protection reports, Vigitel survey indicators, and Ambev beer sales? This dashboard presents a descriptive view of the available data, with filters for time, region, and SINAN cohort. It does not independently prove a causal effect of alcohol on violence or of policy changes on either.
-            </p>
+            <h1>I started with alcohol. The data changed the question.</h1>
+            <p class="lede">This investigation began by asking whether beer consumption and taxation could explain domestic-violence reports. Each test exposed a limitation, changed the next question, and ultimately shifted the goal from explaining why violence occurs to anticipating when recorded demand may be higher.</p>
           </div>
           <aside class="question-card">
-            <p class="eyebrow">PRIMARY QUESTION</p>
-            <p>Could a change in laws and policies affect the recorded incidence of domestic violence and alcohol-related harm in Brazil?</p>
+            <p class="eyebrow">STARTING ASSUMPTION</p>
+            <p>Alcohol may influence domestic violence. Do beer consumption and taxation help explain the reporting pattern?</p>
             <small id="coverageNote"></small>
           </aside>
         </div>
+        <ol class="investigation-rail" aria-label="Investigation path">
+          <li><span>1</span><b>Beer sales</b><small>No clear relationship</small></li><li><span>2</span><b>Understand reports</b><small>A broader population</small></li>
+          <li><span>3</span><b>2020–21 break</b><small>Methods changed</small></li><li><span>4</span><b>Add SINAN</b><small>Direct alcohol field</small></li>
+          <li><span>5</span><b>Test involvement</b><small>Present, not explanatory</small></li><li><span>6</span><b>Add Vigitel</b><small>Weighted rates matter</small></li>
+          <li><span>7</span><b>Test tax</b><small>No standalone signal</small></li><li><span>8</span><b>Ask when</b><small>Move to prediction</small></li>
+        </ol>
       </section>
 
-      <div class="mobile-filter-dock">
-        <button
-          id="mobileFilterToggle"
-          class="mobile-filter-toggle"
-          type="button"
-          aria-expanded="false"
-          aria-controls="filterPanel"
-        >
-          <span class="mobile-filter-title">Filters <span id="activeFilterCount" class="filter-count" hidden>0</span></span>
-          <span id="mobileFilterSummary" class="mobile-filter-summary">2012-2025 | All regions</span>
-          <span class="mobile-filter-change">Change</span>
-        </button>
-      </div>
-      <div id="filterBackdrop" class="filter-backdrop" hidden></div>
-
-      <section id="filterPanel" class="control-bar" aria-label="Dashboard controls">
-        <div class="filter-sheet-header">
-          <div>
-            <p class="eyebrow">Dashboard controls</p>
-            <h3>Filter the SINAN view</h3>
-          </div>
-          <button id="closeFilters" class="filter-close" type="button">Close</button>
-        </div>
-        <div>
-          <label for="fromYear">From year</label>
-          <select id="fromYear"></select>
-        </div>
-        <div>
-          <label for="toYear">To year</label>
-          <select id="toYear"></select>
-        </div>
-        <div>
-          <label for="cohortSelect">SINAN cohort</label>
-          <select id="cohortSelect"></select>
-        </div>
-        <div>
-          <label for="regionSelect">Region</label>
-          <select id="regionSelect"></select>
-        </div>
-        <div class="filter-actions">
-          <button id="resetFilters" type="button">Reset view</button>
-          <button id="applyFilters" class="apply-filters" type="button">Apply filters</button>
-        </div>
-        <p class="filter-note">SINAN filters update SINAN sections. Protection, Vigitel, and Ambev remain source-native.</p>
-      </section>
-
-      <section class="section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">SECTION 1</p>
-            <h2>What is being recorded?</h2>
-          </div>
-          <p class="source-note">
-            SINAN counts are health-service notifications. Ambev measures are national company sales context,
-            not population alcohol-consumption estimates or SINAN outcomes.
-          </p>
-        </div>
-        <div class="metric-grid four-up">
-          <article class="metric-card navy-card">
-            <p>All SINAN notifications</p>
-            <strong id="metricAllSinan">-</strong>
-            <small id="metricAllSinanNote">-</small>
-          </article>
-          <article class="metric-card rust-card">
-            <p>Domestic/family notifications</p>
-            <strong id="metricDomestic">-</strong>
-            <small id="metricDomesticNote">-</small>
-          </article>
-          <article class="metric-card teal-card">
-            <p>Intimate partner notifications</p>
-            <strong id="metricIpv">-</strong>
-            <small id="metricIpvNote">-</small>
-          </article>
-          <article class="metric-card gold-card">
-            <p>Latest Ambev beer sales tax</p>
-            <strong id="metricAmbevTax">-</strong>
-            <small id="metricAmbevTaxNote">-</small>
-          </article>
-        </div>
-        <div class="panel-grid two-up">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">SINAN BURDEN</p>
-                <h3>Monthly domestic/family and intimate partner notifications</h3>
-              </div>
-              <p class="mini-note">The selected region filter applies here.</p>
-            </div>
-            <div class="legend">
-              <span><i class="swatch rust"></i>Domestic/family</span>
-              <span><i class="swatch teal"></i>Intimate partner</span>
-            </div>
-            <div id="overviewChart" class="chart" role="img" aria-label="Monthly domestic/family and intimate partner SINAN notifications"></div>
-            <p class="caption" id="overviewTakeaway"></p>
-          </article>
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">AMBEV CONTEXT</p>
-                <h3>Beer volume sold and Brazilian beer sales tax (% gross sales)</h3>
-              </div>
-              <p class="mini-note">National company data; tax series available through 2023.</p>
-            </div>
-            <div class="legend">
-              <span><i class="swatch gold"></i>Beer volume sold (consumption context), indexed</span>
-              <span><i class="swatch teal"></i>Beer sales tax share, indexed</span>
-            </div>
-            <div id="ambevOverviewChart" class="chart" role="img" aria-label="Indexed annual Ambev Brazil beer volume sold and beer sales tax share"></div>
-            <p class="caption">The variable was obtained from Ambev’s annual Form 20-F, where the company reports sales taxes charged on beer products in Brazil as a percentage of gross beer sales. The available tax series covers 2012-2023. Beer volume is a company sales measure, not national alcohol consumption.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section alt-section" id="alcohol">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">SECTION 2</p>
-            <h2>Where is alcohol indicated?</h2>
-          </div>
-          <p class="source-note">
-            The key percentage uses only known SINAN alcohol responses:
-            <code>Yes / (Yes + No)</code>. Unknown responses are excluded from the Yes/No comparison.
-          </p>
-        </div>
-        <div class="metric-grid four-up">
-          <article class="metric-card navy-card">
-            <p>Suspected alcohol share</p>
-            <strong id="alcoholKnownShare">-</strong>
-            <small id="alcoholKnownShareNote">-</small>
-          </article>
-          <article class="metric-card rust-card">
-            <p>Not suspected alcohol-related</p>
-            <strong id="alcoholNoShare">-</strong>
-            <small id="alcoholNoShareNote">-</small>
-          </article>
-          <article class="metric-card teal-card">
-            <p>Suspected alcohol count</p>
-            <strong id="alcoholYesCount">-</strong>
-            <small id="alcoholYesCountNote">-</small>
-          </article>
-          <article class="metric-card gold-card">
-            <p>Not suspected alcohol count</p>
-            <strong id="alcoholNoCount">-</strong>
-            <small id="alcoholNoCountNote">-</small>
-          </article>
-        </div>
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">ALCOHOL TREND</p>
-              <h3>Monthly Yes/No alcohol indication among known SINAN responses</h3>
-            </div>
-          </div>
-          <div class="legend">
-            <span><i class="swatch navy"></i>Yes: alcohol suspected</span>
-            <span><i class="swatch rust"></i>No: alcohol not suspected</span>
-          </div>
-          <div id="alcoholChart" class="chart" role="img" aria-label="Monthly SINAN alcohol indication shares"></div>
-          <p class="caption" id="alcoholTakeaway"></p>
+      <section class="section cycle-section" id="first-tests">
+        <div class="cycle-heading"><p class="cycle-number">CYCLE 1</p><div><p class="eyebrow">FIRST HYPOTHESIS</p><h2>Do beer sales move with domestic-violence reports?</h2><p class="cycle-question">Test: compare Ambev’s reported Brazil beer volume with records in the combined protection-report extract.</p></div></div>
+        <article class="panel hero-panel">
+          <div class="panel-header"><div><p class="eyebrow">INDEXED COMPARISON</p><h3>Beer volume and protection-report records</h3></div><p class="mini-note">Common years are indexed to 100 in the first visible year.</p></div>
+          <div class="legend"><span><i class="swatch gold"></i>Ambev Brazil beer volume</span><span><i class="swatch rust"></i>Protection-report source rows</span></div>
+          <div id="firstTestChart" class="chart" role="img" aria-label="Indexed annual Ambev beer volume and protection-report records"></div>
         </article>
+        <div class="finding-card finding-null"><p class="eyebrow">FINDING</p><strong>No clear relationship appears in the two trajectories.</strong><p>Beer volume is a company sales measure and the protection series counts source rows rather than unique victims. The comparison is exploratory—not a causal test.</p><div class="next-question"><span>Next question</span> Do I understand what the domestic-violence reporting data actually contains?</div></div>
+        <details class="evidence-detail"><summary>See the original SINAN and beer context comparison</summary><article class="panel detail-panel"><div id="contextChart" class="chart" role="img" aria-label="Indexed quarterly SINAN cohort and Ambev beer volume"></div><p class="caption" id="contextCaption"></p></article></details>
       </section>
 
-      <section class="section" id="breakdowns">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">SECTION 3</p>
-            <h2>Who and what is represented?</h2>
-          </div>
-          <div class="inline-control">
-            <label for="dimensionSelect">Breakdown</label>
-            <select id="dimensionSelect"></select>
-          </div>
-        </div>
-        <div class="panel-grid two-up">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">TOP DISTRIBUTION</p>
-                <h3 id="breakdownTitle">Top categories</h3>
-              </div>
-            </div>
-            <div id="breakdownBars" class="bar-list"></div>
-            <p class="caption" id="breakdownCaption"></p>
-          </article>
-          <article class="panel note-panel">
-            <p class="eyebrow">SELECTED CATEGORY INSIGHTS</p>
-            <h3 id="breakdownInsightTitle">Select a category</h3>
-            <p class="insight-context" id="breakdownInsightContext"></p>
-            <div id="breakdownInsightList" class="insight-card-grid" role="list" aria-live="polite"></div>
-            <p id="breakdownInsightLimitation" class="insight-limitation"></p>
-            <p class="insight-method-note">
-              Percentages use known responses unless stated otherwise. Violence types and aggressor relationships
-              are mention-based, so one notification may contribute to more than one category.
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section alt-section" id="calendar">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">SECTION 4</p>
-            <h2>When are notifications recorded?</h2>
-          </div>
-          <p class="source-note">
-            Rates are normalized by the number of eligible holiday, non-holiday weekend, and non-holiday weekday
-            days in the selected years.
-          </p>
-        </div>
-        <div class="metric-grid four-up">
-          <article class="metric-card navy-card">
-            <p>Holiday rate per day</p>
-            <strong id="holidayRate">-</strong>
-            <small id="holidayRateNote">-</small>
-          </article>
-          <article class="metric-card rust-card">
-            <p>Weekend rate per day</p>
-            <strong id="weekendRate">-</strong>
-            <small id="weekendRateNote">-</small>
-          </article>
-          <article class="metric-card teal-card">
-            <p>Weekday rate per day</p>
-            <strong id="weekdayRate">-</strong>
-            <small id="weekdayRateNote">-</small>
-          </article>
-          <article class="metric-card gold-card">
-            <p>Holiday vs weekday</p>
-            <strong id="holidayVsWeekday">-</strong>
-            <small id="holidayVsWeekdayNote">-</small>
-          </article>
-        </div>
-        <div class="panel-grid two-up">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">RATES</p>
-                <h3>Notifications per eligible day</h3>
-              </div>
-            </div>
-            <div id="calendarBars" class="bar-list compact"></div>
-          </article>
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">WEEKDAYS</p>
-                <h3>Average notifications by weekday</h3>
-              </div>
-            </div>
-            <div id="weekdayBars" class="bar-list compact"></div>
-          </article>
-        </div>
+      <section class="section alt-section cycle-section" id="understand-reports">
+        <div class="cycle-heading"><p class="cycle-number">CYCLE 2</p><div><p class="eyebrow">UNDERSTAND THE SOURCE</p><h2>Who and what appears in the protection-report extract?</h2><p class="cycle-question">Test: examine suspect gender, victim gender, suspect relationship, and broad violation group.</p></div></div>
+        <div class="metric-grid two-up story-metrics"><article class="metric-card rust-card"><p>Female share of known suspect-gender rows</p><strong id="femaleSuspectShare">-</strong><small>Female / (female + male)</small></article><article class="metric-card gold-card"><p>Mother relationship rows</p><strong id="motherRelationshipShare">-</strong><small>Share of classified relationship rows</small></article></div>
         <article class="panel">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">HOLIDAY RANKING</p>
-              <h3>Average notifications per holiday occurrence</h3>
-            </div>
-          </div>
-          <div id="holidayBars" class="bar-list"></div>
+          <div class="panel-header"><div><p class="eyebrow">PROFILE</p><h3 id="protectionProfileTitle">Suspect gender</h3></div><div class="inline-control"><label for="protectionDimensionSelect">Breakdown</label><select id="protectionDimensionSelect"><option>Suspect gender</option><option>Victim gender</option><option>Suspect relationship</option><option>Violation group</option></select></div></div>
+          <div id="protectionProfileBars" class="bar-list"></div><p class="caption">Counts represent rows in the combined protection extract. One report can generate multiple rows, so these are not unique people or incidents.</p>
         </article>
+        <div class="finding-card finding-surprise"><p class="eyebrow">UNEXPECTED RESULT</p><strong id="protectionProfileFinding">Female suspects and mothers appear more often than the original partner-violence framing implied.</strong><p>The extract covers broad family and domestic violence, including violence involving children, older people, parents, carers, and other relatives. It is not limited to male-partner violence against women.</p><div class="next-question"><span>Change in thinking</span> The outcome is broader than the starting assumption.</div></div>
+        <details class="evidence-detail"><summary>Explore protection violation categories and contact methods</summary><div class="panel-grid two-up detail-panel"><article class="panel"><h3>Leading reported violation categories</h3><div id="protectionViolationBars" class="bar-list"></div></article><article class="panel"><h3>Contact methods in the source table</h3><div id="protectionChannelBars" class="bar-list"></div></article></div></details>
       </section>
 
-      <section class="section" id="protection">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">SECTION 5</p>
-            <h2>What do protection channels record?</h2>
-          </div>
-          <p class="source-note">These are reporting and help-seeking records. They are not police case counts or unique victims.</p>
-        </div>
-        <div class="panel-grid two-up">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">VIOLATIONS</p>
-                <h3>Leading reported violation categories</h3>
-              </div>
-            </div>
-            <div id="protectionViolationBars" class="bar-list"></div>
-          </article>
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">CONTACT METHODS</p>
-                <h3>How reports arrived in the source table</h3>
-              </div>
-            </div>
-            <div id="protectionChannelBars" class="bar-list"></div>
-            <p class="caption">Telephone dominates the available table, but contact method is not equivalent to a validated program split such as Disque 100 versus Ligue 180.</p>
-          </article>
-        </div>
+      <section class="section cycle-section" id="reporting-break">
+        <div class="cycle-heading"><p class="cycle-number">CYCLE 3</p><div><p class="eyebrow">INVESTIGATE THE JUMP</p><h2>The series changes scale around 2020–21.</h2><p class="cycle-question">Investigation: compare the protection-record trend with documented changes in how Ligue 180 classified contacts and complaints.</p></div></div>
+        <div class="metric-grid two-up story-metrics"><article class="metric-card rust-card"><p>Change from 2020 to 2021</p><strong id="reportingJumpMetric">-</strong><small>Combined protection-extract source rows</small></article><article class="metric-card navy-card"><p>Comparability decision</p><strong>Break the series</strong><small>Do not treat 2012–2026 as one stable measure</small></article></div>
+        <article class="panel hero-panel break-panel"><div class="panel-header"><div><p class="eyebrow">REPORTING RECORDS</p><h3>Annual source rows with a 2020–21 comparability break</h3></div></div><div id="reportingBreakChart" class="chart" role="img" aria-label="Annual protection-report source rows with a reporting-method break around 2020 and 2021"></div><p class="caption">The visible jump occurs in 2021, after the initial 2020 observation. Later totals continue at a different scale.</p></article>
+        <div id="methodChangeList" class="method-change-list"></div>
+        <div class="finding-card finding-method"><p class="eyebrow">DISCOVERY</p><strong>Changes in reporting and classification can change the count without an equivalent change in underlying violence.</strong><p>The database does not include a stable report identifier or a validated Disque 100/Ligue 180 program split. Pre- and post-break values are therefore shown as reporting context, not a continuous incidence series.</p><div class="next-question"><span>Next question</span> Can a source with a direct alcohol field provide a stronger test?</div></div>
       </section>
 
-      <section class="section alt-section" id="context">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">SECTION 6</p>
-            <h2>Alcohol and policy context</h2>
-          </div>
-          <p class="source-note">These context indicators share a time axis, not a unit of measurement. They do not independently prove an effect on violence.</p>
-        </div>
-        <div class="panel-grid two-up">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">MARKET CONTEXT</p>
-                <h3>Indexed SINAN cohort and Ambev beer volume</h3>
-              </div>
-            </div>
-            <div class="legend">
-              <span><i class="swatch navy"></i>Selected SINAN cohort</span>
-              <span><i class="swatch gold"></i>Ambev Brazil beer volume</span>
-            </div>
-            <div id="contextChart" class="chart" role="img" aria-label="Indexed quarterly SINAN and Ambev beer volume"></div>
-            <p class="caption" id="contextCaption"></p>
-          </article>
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">VIGITEL</p>
-                <h3>Adult alcohol-consumption indicators</h3>
-              </div>
-            </div>
-            <div class="legend">
-              <span><i class="swatch teal"></i>Drank in last 30 days</span>
-              <span><i class="swatch gold"></i>Abusive consumption</span>
-            </div>
-            <div id="vigitelChart" class="chart" role="img" aria-label="Vigitel alcohol indicators"></div>
-            <p class="caption" id="vigitelCaption">Weighted Vigitel survey estimates for Brazilian capitals and the Federal District.</p>
-          </article>
-        </div>
-        <div class="metric-grid two-up">
-          <article class="metric-card teal-card">
-            <p>Latest Vigitel current drinking</p>
-            <strong id="latestVigitelCurrent">-</strong>
-            <small id="latestVigitelCurrentNote">-</small>
-          </article>
-          <article class="metric-card gold-card">
-            <p>Latest Vigitel abusive consumption</p>
-            <strong id="latestVigitelAbusive">-</strong>
-            <small id="latestVigitelAbusiveNote">-</small>
-          </article>
-        </div>
-        <article class="panel">
-          <p class="eyebrow">METHODOLOGY CHANGE</p>
-          <h3>Vigitel continuity and comparability</h3>
-          <ul class="plain-list">
-            <li><b>2022: no collection.</b><span>The Ministry of Health reports that the contracted collection operation was interrupted; this dashboard displays a gap, not a zero.</span></li>
-            <li><b>2024: changed collection context.</b><span>The survey used a reduced, concentrated collection period, expanded mobile interviewing, and updated weighting based on the 2022 Census. Trend comparisons need caution.</span></li>
-            <li><b>2024 current drinking: deliberately unavailable.</b><span>The supplied data no longer populates the legacy 30-day field. It does contain past-12-month use and frequency fields, but they are not substituted because that would create a non-comparable estimate.</span></li>
-            <li><b>What remains comparable.</b><span>The heavy episodic (abusive) consumption series remains displayed when the source response and survey weight are available.</span></li>
-          </ul>
-        </article>
+      <section class="section alt-section cycle-section" id="direct-test">
+        <div class="cycle-heading"><p class="cycle-number">CYCLE 4</p><div><p class="eyebrow">ADD A MORE DIRECT SOURCE</p><h2>SINAN records suspected aggressor alcohol involvement.</h2><p class="cycle-question">Action: move from beer-market context to health-service notifications containing a direct Yes/No/Unknown alcohol indication.</p></div></div>
+        <div class="mobile-filter-dock"><button id="mobileFilterToggle" class="mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="filterPanel"><span class="mobile-filter-title">SINAN filters <span id="activeFilterCount" class="filter-count" hidden>0</span></span><span id="mobileFilterSummary" class="mobile-filter-summary">2012-2025 | All regions</span><span class="mobile-filter-change">Change</span></button></div><div id="filterBackdrop" class="filter-backdrop" hidden></div>
+        <section id="filterPanel" class="control-bar story-controls" aria-label="SINAN controls"><div class="filter-sheet-header"><div><p class="eyebrow">SINAN VIEW</p><h3>Filter the direct test</h3></div><button id="closeFilters" class="filter-close" type="button">Close</button></div><div><label for="fromYear">From year</label><select id="fromYear"></select></div><div><label for="toYear">To year</label><select id="toYear"></select></div><div><label for="cohortSelect">SINAN cohort</label><select id="cohortSelect"></select></div><div><label for="regionSelect">Region</label><select id="regionSelect"></select></div><div class="filter-actions"><button id="resetFilters" type="button">Reset view</button><button id="applyFilters" class="apply-filters" type="button">Apply filters</button></div><p class="filter-note">These controls update SINAN chapters only. Protection, Vigitel, and Ambev retain their source-native coverage.</p></section>
+        <div class="metric-grid three-up story-metrics"><article class="metric-card navy-card"><p>All SINAN notifications</p><strong id="metricAllSinan">-</strong><small id="metricAllSinanNote">-</small></article><article class="metric-card rust-card"><p>Domestic/family notifications</p><strong id="metricDomestic">-</strong><small id="metricDomesticNote">-</small></article><article class="metric-card teal-card"><p>Intimate partner notifications</p><strong id="metricIpv">-</strong><small id="metricIpvNote">-</small></article></div>
+        <article class="panel"><div class="panel-header"><div><p class="eyebrow">SINAN TREND</p><h3>Monthly domestic/family and intimate-partner notifications</h3></div></div><div class="legend"><span><i class="swatch rust"></i>Domestic/family</span><span><i class="swatch teal"></i>Intimate partner</span></div><div id="overviewChart" class="chart" role="img" aria-label="Monthly domestic/family and intimate partner SINAN notifications"></div><p class="caption" id="overviewTakeaway"></p></article>
+        <div class="finding-card finding-method"><p class="eyebrow">DISCOVERY</p><strong>The alcohol measure is now closer to the event—but it remains a suspected involvement field.</strong><p>SINAN notifications come from health services. They are not prevalence estimates, police cases, or unique victims.</p><div class="next-question"><span>Next question</span> Do alcohol-indicated notifications mirror the wider violence trend?</div></div>
       </section>
 
-      <section class="section" id="policy">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">SECTION 7</p>
-            <h2>Law and tax changes through the years</h2>
-          </div>
-          <p class="source-note">These are contextual policy markers, not causal estimates. Their colour-coded markers appear on every time-series; event-level source links and date notes are listed below.</p>
-        </div>
-        <div id="policyTimeline" class="policy-timeline"></div>
+      <section class="section cycle-section" id="alcohol">
+        <div class="cycle-heading"><p class="cycle-number">CYCLE 5</p><div><p class="eyebrow">TEST ALCOHOL INVOLVEMENT DIRECTLY</p><h2>Alcohol is present in some notifications, but it does not explain the overall pattern.</h2><p class="cycle-question">Expectation: if alcohol drives the increase, its known-response share should rise with the notification trend.</p></div></div>
+        <div class="metric-grid four-up story-metrics"><article class="metric-card navy-card"><p>Suspected alcohol share</p><strong id="alcoholKnownShare">-</strong><small id="alcoholKnownShareNote">-</small></article><article class="metric-card rust-card"><p>Not suspected share</p><strong id="alcoholNoShare">-</strong><small id="alcoholNoShareNote">-</small></article><article class="metric-card teal-card"><p>Suspected alcohol rows</p><strong id="alcoholYesCount">-</strong><small id="alcoholYesCountNote">-</small></article><article class="metric-card gold-card"><p>Not suspected rows</p><strong id="alcoholNoCount">-</strong><small id="alcoholNoCountNote">-</small></article></div>
+        <article class="panel"><div class="panel-header"><div><p class="eyebrow">KNOWN RESPONSES</p><h3>Monthly Yes/No alcohol indication</h3></div></div><div class="legend"><span><i class="swatch navy"></i>Yes: alcohol suspected</span><span><i class="swatch rust"></i>No: alcohol not suspected</span></div><div id="alcoholChart" class="chart" role="img" aria-label="Monthly SINAN alcohol indication shares"></div><p class="caption" id="alcoholTakeaway"></p></article>
+        <div class="finding-card finding-null"><p class="eyebrow">FINDING</p><strong>Alcohol matters for a subset of records, but the share does not reproduce the overall notification trajectory.</strong><div class="next-question"><span>New hypothesis</span> Perhaps population drinking behaviour changed.</div></div>
       </section>
 
-      <section class="section" id="methods">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">SECTION 8</p>
-            <h2>Methods and limitations</h2>
-          </div>
-          <p class="source-note" id="refreshNote"></p>
-        </div>
-        <div class="panel-grid two-up">
-          <article class="panel">
-            <p class="eyebrow">COHORT RULES</p>
-            <div id="cohortDefinitions" class="definition-list"></div>
-          </article>
-          <article class="panel">
-            <p class="eyebrow">LIMITATIONS</p>
-            <ul id="limitationsList" class="plain-list"></ul>
-          </article>
-        </div>
-        <article class="panel">
-          <p class="eyebrow">METHOD FLOW</p>
-          <ol class="method-list">
-            <li><b>Sources</b><span>SINAN notifications, protection reports, Vigitel survey records, Ambev quarterly disclosures, the holiday calendar, and the database-backed policy timeline.</span></li>
-            <li><b>Prepare</b><span>Standardize dates, derive cohorts, classify calendar days, map source fields into browser-safe aggregates, and preserve unavailable or non-comparable Vigitel values as gaps.</span></li>
-            <li><b>Describe</b><span>Calculate counts, shares with explicit denominators, and rates per eligible day.</span></li>
-            <li><b>Interpret</b><span>Keep health notifications, protection reports, survey indicators, and beer-market signals separate.</span></li>
-          </ol>
-        </article>
+      <section class="section alt-section cycle-section" id="context">
+        <div class="cycle-heading"><p class="cycle-number">CYCLE 6</p><div><p class="eyebrow">ADD VIGITEL</p><h2>Raw survey counts mislead when sample sizes change.</h2><p class="cycle-question">Correction: replace raw respondent counts with survey-weighted percentages and the heavy episodic drinking indicator.</p></div></div>
+        <div class="panel-grid two-up"><article class="panel pitfall-panel"><div class="panel-header"><div><p class="eyebrow">FIRST ATTEMPT</p><h3>Vigitel sample size by year</h3></div></div><div id="vigitelSampleChart" class="chart" role="img" aria-label="Annual Vigitel record counts"></div><p class="caption">Changing sample sizes make raw consumption counts unsuitable for trend comparison.</p></article><article class="panel"><div class="panel-header"><div><p class="eyebrow">CORRECTED VIEW</p><h3>Weighted alcohol-consumption indicators</h3></div></div><div class="legend"><span><i class="swatch teal"></i>Drank in last 30 days</span><span><i class="swatch gold"></i>Heavy episodic consumption</span></div><div id="vigitelChart" class="chart" role="img" aria-label="Weighted Vigitel alcohol indicators"></div><p class="caption" id="vigitelCaption"></p></article></div>
+        <div class="metric-grid two-up story-metrics"><article class="metric-card teal-card"><p>Latest comparable current drinking</p><strong id="latestVigitelCurrent">-</strong><small id="latestVigitelCurrentNote">-</small></article><article class="metric-card gold-card"><p>Latest heavy episodic consumption</p><strong id="latestVigitelAbusive">-</strong><small id="latestVigitelAbusiveNote">-</small></article></div>
+        <details class="evidence-detail"><summary>Vigitel continuity and comparability notes</summary><article class="panel detail-panel"><ul class="plain-list"><li><b>2022: no collection.</b><span>The chart shows a gap, not a zero.</span></li><li><b>2024: changed collection context.</b><span>Collection was concentrated, mobile interviewing expanded, and weighting was updated using the 2022 Census.</span></li><li><b>2024 current drinking: unavailable.</b><span>The legacy last-30-days field is not populated and is not replaced with a non-comparable field.</span></li></ul></article></details>
+        <div class="finding-card finding-null"><p class="eyebrow">FINDING</p><strong>Weighted drinking behaviour does not explain the violence-notification trend.</strong><div class="next-question"><span>Next question</span> Could tax changes have shifted consumption or harm?</div></div>
+      </section>
+
+      <section class="section cycle-section" id="taxation">
+        <div class="cycle-heading"><p class="cycle-number">CYCLE 7</p><div><p class="eyebrow">TEST TAXATION</p><h2>Beer-tax changes do not provide a standalone explanation.</h2><p class="cycle-question">Action: add Ambev’s reported Brazilian beer sales-tax burden and inspect alcohol-tax policy changes.</p></div></div>
+        <div class="metric-grid one-up story-metrics compact-metric"><article class="metric-card gold-card"><p>Latest available Ambev beer sales-tax burden</p><strong id="metricAmbevTax">-</strong><small id="metricAmbevTaxNote">-</small></article></div>
+        <article class="panel"><div class="panel-header"><div><p class="eyebrow">AMBEV CONTEXT</p><h3>Indexed beer volume and reported sales-tax share</h3></div></div><div class="legend"><span><i class="swatch gold"></i>Beer volume</span><span><i class="swatch teal"></i>Beer sales-tax share</span></div><div id="ambevOverviewChart" class="chart" role="img" aria-label="Indexed annual Ambev Brazil beer volume and beer sales tax share"></div><p class="caption">Tax data are available through 2023. This is a company disclosure, not a national effective-tax estimate.</p></article>
+        <details class="evidence-detail"><summary>See the contextual policy timeline</summary><div id="policyTimeline" class="policy-timeline detail-panel"></div></details>
+        <div class="finding-card finding-null"><p class="eyebrow">CHANGE IN THINKING</p><strong>Taxation may influence alcohol-related harm, but this descriptive series does not support it as a standalone explanation.</strong><div class="next-question"><span>New direction</span> If no single factor explains the trend, can timing identify higher recorded demand?</div></div>
+      </section>
+
+      <section class="section alt-section cycle-section" id="timing">
+        <div class="cycle-heading"><p class="cycle-number">CYCLE 8</p><div><p class="eyebrow">CHANGE “WHY?” TO “WHEN?”</p><h2>Some calendar periods carry higher notification volumes.</h2><p class="cycle-question">Action: compare holidays, non-holiday weekends, weekdays, named holidays, and weekday patterns using rates per eligible day.</p></div></div>
+        <div class="metric-grid four-up story-metrics"><article class="metric-card navy-card"><p>Holiday rate per day</p><strong id="holidayRate">-</strong><small id="holidayRateNote">-</small></article><article class="metric-card rust-card"><p>Weekend rate per day</p><strong id="weekendRate">-</strong><small id="weekendRateNote">-</small></article><article class="metric-card teal-card"><p>Weekday rate per day</p><strong id="weekdayRate">-</strong><small id="weekdayRateNote">-</small></article><article class="metric-card gold-card"><p>Holiday vs weekday</p><strong id="holidayVsWeekday">-</strong><small id="holidayVsWeekdayNote">-</small></article></div>
+        <div class="panel-grid two-up"><article class="panel"><div class="panel-header"><div><p class="eyebrow">DAY TYPES</p><h3>Notifications per eligible day</h3></div></div><div id="calendarBars" class="bar-list compact"></div></article><article class="panel"><div class="panel-header"><div><p class="eyebrow">WEEKDAYS</p><h3>Average notifications by weekday</h3></div></div><div id="weekdayBars" class="bar-list compact"></div></article></div>
+        <article class="panel"><div class="panel-header"><div><p class="eyebrow">HOLIDAY RANKING</p><h3>Average notifications per holiday occurrence</h3></div></div><div id="holidayBars" class="bar-list"></div></article>
+        <div class="finding-card finding-direction"><p class="eyebrow">NEW QUESTION</p><strong>Can calendar and recent reporting patterns predict higher notification volumes?</strong></div>
+      </section>
+
+      <section class="section prediction-section" id="prediction">
+        <div class="prediction-intro"><p class="eyebrow">FINAL PIVOT</p><h2>Prediction instead of causation.</h2><p>Rather than claiming to know what causes domestic violence, the final model asks whether historical patterns can help services anticipate periods of higher recorded notification volume.</p></div>
+        <div class="metric-grid four-up story-metrics prediction-metrics"><article class="metric-card navy-card"><p>2025 holdout MAE</p><strong id="predictionMae">-</strong><small>Average absolute daily error</small></article><article class="metric-card rust-card"><p>Same-weekday baseline MAE</p><strong id="predictionBaseline">-</strong><small>Previous week’s same day</small></article><article class="metric-card teal-card"><p>Holdout R²</p><strong id="predictionR2">-</strong><small>Chronological test period</small></article><article class="metric-card gold-card"><p>Top-volume day recall</p><strong id="predictionHighRecall">-</strong><small>Top 20% of 2025 days by rank</small></article></div>
+        <article class="panel prediction-panel"><div class="panel-header"><div><p class="eyebrow">OUT-OF-SAMPLE TEST</p><h3>Weekly actual and predicted notifications in 2025</h3></div><p class="mini-note">The model was fitted only on data through 2024.</p></div><div class="legend"><span><i class="swatch navy"></i>Actual</span><span><i class="swatch gold"></i>Predicted</span></div><div id="predictionChart" class="chart" role="img" aria-label="Weekly actual and predicted domestic family SINAN notifications in the 2025 holdout"></div><p class="caption" id="predictionTakeaway"></p></article>
+        <div class="panel-grid prediction-grid"><article class="panel"><div class="panel-header"><div><p class="eyebrow">MODEL INPUTS</p><h3>Predictive feature importance</h3></div></div><div id="featureImportanceBars" class="bar-list compact"></div><p class="caption">Importance reflects this fitted model. It is not evidence that a feature causes violence.</p></article><article class="panel note-panel prediction-caveat"><p class="eyebrow">WHAT THE MODEL PREDICTS</p><h3>Service demand—not violence itself.</h3><ul id="predictionLimitations" class="plain-list"></ul></article></div>
+        <div class="final-question"><p>Original question</p><strong>What causes domestic violence?</strong><span aria-hidden="true">→</span><p>Operational question</p><strong>When might recorded notification volume be higher?</strong></div>
+      </section>
+
+      <section class="section methods-section" id="explore">
+        <div class="section-heading"><div><p class="eyebrow">EXPLORE &amp; VERIFY</p><h2>Detailed SINAN profiles, methods, and limitations</h2></div><p class="source-note" id="refreshNote"></p></div>
+        <details class="methods-details"><summary>Explore SINAN breakdowns</summary><div class="detail-panel"><div class="inline-control"><label for="dimensionSelect">Breakdown</label><select id="dimensionSelect"></select></div><div class="panel-grid two-up methods-grid"><article class="panel"><h3 id="breakdownTitle">Top categories</h3><div id="breakdownBars" class="bar-list"></div><p class="caption" id="breakdownCaption"></p></article><article class="panel note-panel"><h3 id="breakdownInsightTitle">Select a category</h3><p class="insight-context" id="breakdownInsightContext"></p><div id="breakdownInsightList" class="insight-card-grid" role="list" aria-live="polite"></div><p id="breakdownInsightLimitation" class="insight-limitation"></p><p class="insight-method-note">Percentages use known responses unless stated otherwise. Mention-based dimensions can contribute to more than one category.</p></article></div></div></details>
+        <details class="methods-details"><summary>Methods, cohort rules, and limitations</summary><div class="panel-grid two-up methods-grid detail-panel"><article class="panel"><p class="eyebrow">COHORT RULES</p><div id="cohortDefinitions" class="definition-list"></div></article><article class="panel"><p class="eyebrow">LIMITATIONS</p><ul id="limitationsList" class="plain-list"></ul></article></div><article class="panel detail-panel"><p class="eyebrow">METHOD FLOW</p><ol class="method-list"><li><b>Compare</b><span>Test beer-market context against protection-report records.</span></li><li><b>Interrogate</b><span>Inspect who and what the reporting data represents.</span></li><li><b>Separate</b><span>Treat methodology changes and source grains as analytical boundaries.</span></li><li><b>Correct</b><span>Use direct alcohol indications and weighted survey estimates.</span></li><li><b>Predict</b><span>Evaluate one-day-ahead notification forecasts on a chronological 2025 holdout.</span></li></ol></article></details>
       </section>
     </main>
 
-    <footer>Jessica Oshiro's Capstone dashboard prototype planned with Codex GPT Sol 6.4 and built with Terra 6.4. Data cleaning and preparation by Jessica Oshiro. </footer>
-    <script src="data/dashboard-data.js"></script>
-    <script src="app.js"></script>
+    <footer>Jessica Oshiro’s DATA6000 capstone. Data cleaning and preparation by Jessica Oshiro. The site describes recorded reports and notifications; it does not estimate prevalence or prove causation.</footer>
+    <script src="data/dashboard-data.js"></script><script src="data/prediction-data.js"></script><script src="app.js"></script>
   </body>
 </html>
