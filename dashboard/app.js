@@ -35,6 +35,7 @@ const number = new Intl.NumberFormat('en-US');
 const compact = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
 const percent1 = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
 const monthFormat = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' });
+const exampleDateFormat = new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 
 const regions = ['All', ...new Set(data.monthlyCohort.map(row => row.region_name).filter(Boolean).filter(name => name !== 'Unknown'))];
 const dimensions = [
@@ -909,29 +910,98 @@ function renderPrediction() {
     return;
   }
   const metrics = prediction.metrics;
-  setText('predictionMae', metrics.mae.toFixed(1));
-  setText('predictionBaseline', metrics.baselineMae.toFixed(1));
-  setText('predictionR2', metrics.r2.toFixed(2));
-  setText('predictionHighRecall', percent1.format(metrics.recall));
+  const tree = metrics.decisionTree;
+  const forest = metrics.randomForest;
+  const baseline = metrics.baseline;
+  setText('forestMae', forest.mae.toFixed(1));
+  setText('treeMae', tree.mae.toFixed(1));
+  setText('forestR2', forest.r2.toFixed(2));
+  setText('forestHighRecall', percent1.format(forest.recall));
+
+  document.getElementById('lagCards').innerHTML = prediction.meta.lagDefinitions.map(lag => `
+    <article class="lag-card">
+      <span>LAG ${escapeHtml(lag.days)}</span>
+      <strong>${escapeHtml(lag.label)}</strong>
+      <p>${escapeHtml(lag.meaning)}</p>
+    </article>
+  `).join('');
+  setText('lagMethod', prediction.meta.lagMethod);
+  setText('leakageControl', prediction.meta.leakageControl);
+  setText('predictionTargetDefinition', prediction.meta.targetDefinition);
+  setText('orangeVersion', prediction.meta.software);
+  setText('predictionImportanceMethod', `${prediction.meta.featureImportanceMethod} Importance is predictive—not causal.`);
+
+  document.getElementById('predictionExamples').innerHTML = prediction.examples.map(row => {
+    const forestDifference = Math.round(row.randomForest - row.actual);
+    const reading = Math.abs(forestDifference) <= 15
+      ? `The Random Forest was close: ${Math.abs(forestDifference)} notifications from the recorded total.`
+      : `The Random Forest ${forestDifference > 0 ? 'overpredicted' : 'underpredicted'} by ${Math.abs(forestDifference)} notifications.`;
+    return `
+      <article class="prediction-example-card">
+        <time datetime="${escapeHtml(row.date)}">${escapeHtml(exampleDateFormat.format(new Date(`${row.date}T00:00:00Z`)))}</time>
+        <strong>${escapeHtml(row.context)}</strong>
+        <div class="example-inputs">
+          <span>Yesterday<b>${number.format(Math.round(row.lag1))}</b></span>
+          <span>Last week<b>${number.format(Math.round(row.lag7))}</b></span>
+          <span>4 weeks ago<b>${number.format(Math.round(row.lag28))}</b></span>
+        </div>
+        <div class="example-results">
+          <span>Actual<b>${number.format(Math.round(row.actual))}</b></span>
+          <span>Tree<b>${number.format(Math.round(row.decisionTree))}</b></span>
+          <span>Forest<b>${number.format(Math.round(row.randomForest))}</b></span>
+        </div>
+        <p class="example-reading">${escapeHtml(reading)}</p>
+      </article>
+    `;
+  }).join('');
 
   lineChart(document.getElementById('predictionChart'), {
-    title: 'Weekly actual and predicted notifications in the 2025 holdout',
+    title: `Weekly actual, Decision Tree, and Random Forest predictions, ${prediction.meta.testStart.slice(0, 4)}–${prediction.meta.testEnd.slice(0, 4)}`,
     labels: prediction.weekly.map((row, index) => index % 8 === 0 ? row.week.slice(5) : ''),
     tooltipLabels: prediction.weekly.map(row => `Week of ${row.week}`),
     series: [
       { label: 'Actual notifications', className: 'line-main', values: prediction.weekly.map(row => row.actual) },
-      { label: 'Predicted notifications', className: 'line-gold', values: prediction.weekly.map(row => row.predicted) }
+      { label: 'Decision Tree', className: 'line-secondary', values: prediction.weekly.map(row => row.decisionTree) },
+      { label: 'Random Forest', className: 'line-gold', values: prediction.weekly.map(row => row.randomForest) }
     ]
   });
 
   renderBars(
-    'featureImportanceBars',
-    prediction.featureImportance.slice(0, 7).map(row => ({ label: row.label, value: row.importance })),
+    'treeFeatureImportanceBars',
+    prediction.featureImportance.decisionTree.slice(0, 7).map(row => ({ label: row.label, value: row.importance })),
     value => percent1.format(value)
+  );
+  renderBars(
+    'forestFeatureImportanceBars',
+    prediction.featureImportance.randomForest.slice(0, 7).map(row => ({ label: row.label, value: row.importance })),
+    value => percent1.format(value)
+  );
+
+  const comparison = [
+    { name: 'Decision Tree', result: tree },
+    { name: 'Random Forest', result: forest }
+  ];
+  const bestMae = Math.min(...comparison.map(row => row.result.mae));
+  document.getElementById('modelComparisonRows').innerHTML = comparison.map(row => `
+    <tr${row.result.mae === bestMae ? ' class="is-best"' : ''}>
+      <th scope="row">${escapeHtml(row.name)}</th>
+      <td>${row.result.mae.toFixed(1)}</td>
+      <td>${row.result.rmse.toFixed(1)}</td>
+      <td>${row.result.r2.toFixed(2)}</td>
+      <td>${percent1.format(row.result.recall)}</td>
+    </tr>
+  `).join('');
+  setText(
+    'predictionBaselineNote',
+    `Validation reference—not an Orange model: using the count from exactly seven days earlier gives an MAE of ${baseline.mae.toFixed(1)}. It is shown only to test whether the two models add forecasting value.`
+  );
+  setText(
+    'predictionSplitNote',
+    `Training window: ${prediction.meta.trainStart} to ${prediction.meta.trainEnd}. Test window: ${prediction.meta.testStart} to ${prediction.meta.testEnd}. Both models use the same ten predictors and no random train/test shuffle.`
   );
   setText(
     'predictionTakeaway',
-    `On the untouched 2025 holdout, the model's daily MAE was ${metrics.mae.toFixed(1)} notifications versus ${metrics.baselineMae.toFixed(1)} for the same-weekday-last-week baseline—a modest ${percent1.format(metrics.maeImprovementPct)} improvement. It identified ${percent1.format(metrics.recall)} of the highest-volume 20% of days by rank.`
+    `Among the two Orange models, Random Forest performed better on the untouched ${prediction.meta.testStart.slice(0, 4)}–${prediction.meta.testEnd.slice(0, 4)} test period: its daily MAE was ${forest.mae.toFixed(1)} versus ${tree.mae.toFixed(1)} for the Decision Tree, and its R² was ${forest.r2.toFixed(2)} versus ${tree.r2.toFixed(2)}.`
   );
   document.getElementById('predictionLimitations').innerHTML = prediction.meta.limitations
     .map(item => `<li>${escapeHtml(item)}</li>`)

@@ -2,355 +2,1353 @@
   "meta": {
     "sourceFile": "DayPrediction_Filtered_Holidays_daily_model_202608311605.csv",
     "outcome": "Daily domestic/family SINAN health-service notifications",
-    "model": "Random forest regression",
+    "models": [
+      "Orange Tree regression (binary tree; maximum depth 8; minimum 10 instances per leaf; do not split subsets smaller than 20)",
+      "Orange Random Forest regression (500 trees; 8 attributes considered per split; replicable training; unlimited depth; do not split subsets smaller than 5)"
+    ],
+    "software": "Orange Data Mining 3.38.1",
+    "orangeTrainFile": "prediction_train_pre_2023.tab",
+    "orangeTestFile": "prediction_test_2023_2025.tab",
     "forecastHorizon": "One day ahead using calendar fields and notification volumes available through the prior day",
     "trainStart": "2012-01-29",
-    "trainEnd": "2024-12-31",
-    "testStart": "2025-01-01",
+    "trainEnd": "2022-12-31",
+    "testStart": "2023-01-01",
     "testEnd": "2025-12-31",
-    "highVolumeDefinition": "Top 20% of days within the chronological 2025 holdout, evaluated by rank",
+    "highVolumeDefinition": "Top 20% of days within the chronological 2023-2025 test period, evaluated by rank",
+    "targetDefinition": "Daily SINAN health-service notifications dated by DT_NOTIFIC, restricted to non-self-inflicted cases (LES_AUTOP = 2) with at least one listed family, intimate-partner, former-partner, dating, sibling, child, or caregiver relationship flag.",
+    "lagDefinitions": [
+      {
+        "days": 1,
+        "label": "Previous day",
+        "meaning": "Yesterday's notification count; captures immediate persistence or short-lived reporting pressure."
+      },
+      {
+        "days": 7,
+        "label": "Same weekday last week",
+        "meaning": "The count exactly seven calendar days earlier; preserves weekday and captures the weekly reporting rhythm."
+      },
+      {
+        "days": 28,
+        "label": "Same weekday four weeks earlier",
+        "meaning": "The count exactly 28 calendar days earlier; preserves weekday while providing a steadier monthly-scale reference."
+      }
+    ],
+    "lagMethod": "The query first creates a complete daily calendar and fills dates without matching notifications with zero. LAG therefore means exact calendar offsets, not the previous non-empty row. The first 28 dates are excluded because at least one lag is unavailable.",
+    "leakageControl": "All lag predictors refer only to earlier dates. The same-day alcohol-related count is retained as metadata and is excluded from model inputs because it would not be known before the target day is complete and is part of the same notification total.",
+    "featureImportanceMethod": "Permutation importance on the 2023-2025 test data: five fixed-seed shuffles per feature, ranked by the increase in MAE and normalized for display.",
     "limitations": [
       "This predicts recorded SINAN notification volume, not the occurrence of violence.",
-      "The holdout is chronological; 2025 was not used to fit the model.",
+      "The test period is chronological; dates from 2023 onward were not used to fit either model.",
+      "Dates with no matching notifications are treated as zero by the query; a true zero cannot be distinguished from an upstream coverage gap without source-system validation.",
       "Feature importance describes this model's predictive use of a variable and is not causal evidence.",
       "Reporting-system and service-use changes can reduce performance when future conditions differ from the training period."
     ]
   },
   "metrics": {
-    "mae": 67.98558829623013,
-    "rmse": 93.7209869413044,
-    "r2": 0.7998569380687988,
-    "meanActual": 655.3123287671233,
-    "baselineMae": 71.41369863013699,
-    "baselineRmse": 110.46839255381902,
-    "maeImprovementPct": 0.04800353993232575,
-    "actualThreshold": 830.2,
-    "predictedThreshold": 773.2665264502162,
-    "precision": 0.6986301369863014,
-    "recall": 0.6986301369863014,
-    "accuracy": 0.8794520547945206,
-    "actualHighDays": 73,
-    "predictedHighDays": 73,
-    "baselineHighVolumePrecision": 0.6712328767123288,
-    "baselineHighVolumeRecall": 0.6712328767123288
+    "meanActual": 640.7956204379562,
+    "baseline": {
+      "mae": 70.41605839416059,
+      "rmse": 107.35470575021539,
+      "r2": 0.6586743780755087,
+      "actualThreshold": 796.0,
+      "predictedThreshold": 796.0,
+      "precision": 0.65,
+      "recall": 0.65,
+      "accuracy": 0.8594890510948905,
+      "actualHighDays": 220,
+      "predictedHighDays": 220
+    },
+    "decisionTree": {
+      "mae": 92.95780028173574,
+      "rmse": 122.3295918008413,
+      "r2": 0.5568101847551474,
+      "actualThreshold": 796.0,
+      "predictedThreshold": 733.1578947368421,
+      "precision": 0.4948186528497409,
+      "recall": 0.8681818181818182,
+      "accuracy": 0.7956204379562044,
+      "actualHighDays": 220,
+      "predictedHighDays": 386,
+      "maeImprovementPct": -0.32012217669719045
+    },
+    "randomForest": {
+      "mae": 83.53399650948705,
+      "rmse": 109.02296030013196,
+      "r2": 0.6479837931376461,
+      "actualThreshold": 796.0,
+      "predictedThreshold": 723.4679270562772,
+      "precision": 0.6454545454545455,
+      "recall": 0.6454545454545455,
+      "accuracy": 0.8576642335766423,
+      "actualHighDays": 220,
+      "predictedHighDays": 220,
+      "maeImprovementPct": -0.1862918546490853
+    }
   },
   "weekly": [
     {
+      "week": "2022-12-26",
+      "actual": 663.0,
+      "decisionTree": 236.0,
+      "randomForest": 357.4238476190474,
+      "baseline": 448.0
+    },
+    {
+      "week": "2023-01-02",
+      "actual": 3981.0,
+      "decisionTree": 3901.2906690140844,
+      "randomForest": 3907.4137522644023,
+      "baseline": 3775.0
+    },
+    {
+      "week": "2023-01-09",
+      "actual": 3788.0,
+      "decisionTree": 3872.0199230981716,
+      "randomForest": 3704.3996279220783,
+      "baseline": 3981.0
+    },
+    {
+      "week": "2023-01-16",
+      "actual": 4112.0,
+      "decisionTree": 3832.80495472837,
+      "randomForest": 3705.57820937951,
+      "baseline": 3788.0
+    },
+    {
+      "week": "2023-01-23",
+      "actual": 4333.0,
+      "decisionTree": 3890.90313283208,
+      "randomForest": 3880.385234126984,
+      "baseline": 4112.0
+    },
+    {
+      "week": "2023-01-30",
+      "actual": 4187.0,
+      "decisionTree": 4064.245989974937,
+      "randomForest": 4084.2747203463214,
+      "baseline": 4333.0
+    },
+    {
+      "week": "2023-02-06",
+      "actual": 4181.0,
+      "decisionTree": 4115.815789473684,
+      "randomForest": 4042.87064047619,
+      "baseline": 4187.0
+    },
+    {
+      "week": "2023-02-13",
+      "actual": 4453.0,
+      "decisionTree": 3846.2513471177945,
+      "randomForest": 3865.3015903318915,
+      "baseline": 4181.0
+    },
+    {
+      "week": "2023-02-20",
+      "actual": 3724.0,
+      "decisionTree": 3523.1499999999996,
+      "randomForest": 4000.686281818182,
+      "baseline": 4453.0
+    },
+    {
+      "week": "2023-02-27",
+      "actual": 4310.0,
+      "decisionTree": 3778.285714285714,
+      "randomForest": 3817.220330230881,
+      "baseline": 3724.0
+    },
+    {
+      "week": "2023-03-06",
+      "actual": 4249.0,
+      "decisionTree": 4360.608646616542,
+      "randomForest": 4079.5018088023085,
+      "baseline": 4310.0
+    },
+    {
+      "week": "2023-03-13",
+      "actual": 4400.0,
+      "decisionTree": 4165.979323308271,
+      "randomForest": 4067.5544694028185,
+      "baseline": 4249.0
+    },
+    {
+      "week": "2023-03-20",
+      "actual": 4340.0,
+      "decisionTree": 3912.059523809524,
+      "randomForest": 4050.9167582251084,
+      "baseline": 4400.0
+    },
+    {
+      "week": "2023-03-27",
+      "actual": 4440.0,
+      "decisionTree": 4324.7515037593985,
+      "randomForest": 4177.284202303253,
+      "baseline": 4340.0
+    },
+    {
+      "week": "2023-04-03",
+      "actual": 3673.0,
+      "decisionTree": 3844.0324772107256,
+      "randomForest": 3839.169492396492,
+      "baseline": 4440.0
+    },
+    {
+      "week": "2023-04-10",
+      "actual": 4191.0,
+      "decisionTree": 3896.547971829626,
+      "randomForest": 3953.4603460317453,
+      "baseline": 3673.0
+    },
+    {
+      "week": "2023-04-17",
+      "actual": 3639.0,
+      "decisionTree": 3744.5983919976934,
+      "randomForest": 3895.9087745421243,
+      "baseline": 4191.0
+    },
+    {
+      "week": "2023-04-24",
+      "actual": 4097.0,
+      "decisionTree": 3881.50806980687,
+      "randomForest": 3929.940642496393,
+      "baseline": 3639.0
+    },
+    {
+      "week": "2023-05-01",
+      "actual": 3894.0,
+      "decisionTree": 3602.397811871227,
+      "randomForest": 3798.26637979798,
+      "baseline": 4097.0
+    },
+    {
+      "week": "2023-05-08",
+      "actual": 3990.0,
+      "decisionTree": 3795.6880952380952,
+      "randomForest": 3763.364748457099,
+      "baseline": 3894.0
+    },
+    {
+      "week": "2023-05-15",
+      "actual": 3924.0,
+      "decisionTree": 3802.097742647044,
+      "randomForest": 3965.886279653679,
+      "baseline": 3990.0
+    },
+    {
+      "week": "2023-05-22",
+      "actual": 4117.0,
+      "decisionTree": 3893.788197767145,
+      "randomForest": 4016.3450110389617,
+      "baseline": 3924.0
+    },
+    {
+      "week": "2023-05-29",
+      "actual": 4145.0,
+      "decisionTree": 3995.1608919976934,
+      "randomForest": 3969.1821320346326,
+      "baseline": 4117.0
+    },
+    {
+      "week": "2023-06-05",
+      "actual": 3583.0,
+      "decisionTree": 3671.382320569122,
+      "randomForest": 3877.315386147186,
+      "baseline": 4145.0
+    },
+    {
+      "week": "2023-06-12",
+      "actual": 3896.0,
+      "decisionTree": 3348.3238095238094,
+      "randomForest": 3805.286831240981,
+      "baseline": 3583.0
+    },
+    {
+      "week": "2023-06-19",
+      "actual": 4143.0,
+      "decisionTree": 3676.9557066080692,
+      "randomForest": 3834.338965656565,
+      "baseline": 3896.0
+    },
+    {
+      "week": "2023-06-26",
+      "actual": 4202.0,
+      "decisionTree": 4105.189620067868,
+      "randomForest": 4027.000625685425,
+      "baseline": 4143.0
+    },
+    {
+      "week": "2023-07-03",
+      "actual": 4118.0,
+      "decisionTree": 3848.2870614035087,
+      "randomForest": 3988.692765945165,
+      "baseline": 4202.0
+    },
+    {
+      "week": "2023-07-10",
+      "actual": 4129.0,
+      "decisionTree": 4064.245989974937,
+      "randomForest": 3942.809351515152,
+      "baseline": 4118.0
+    },
+    {
+      "week": "2023-07-17",
+      "actual": 4098.0,
+      "decisionTree": 3908.4894634262646,
+      "randomForest": 4056.1732603896107,
+      "baseline": 4129.0
+    },
+    {
+      "week": "2023-07-24",
+      "actual": 4112.0,
+      "decisionTree": 4149.617418546366,
+      "randomForest": 4105.999311760462,
+      "baseline": 4098.0
+    },
+    {
+      "week": "2023-07-31",
+      "actual": 4316.0,
+      "decisionTree": 4021.629918546366,
+      "randomForest": 4024.675227439227,
+      "baseline": 4112.0
+    },
+    {
+      "week": "2023-08-07",
+      "actual": 4703.0,
+      "decisionTree": 4219.62252991634,
+      "randomForest": 3788.84329949495,
+      "baseline": 4316.0
+    },
+    {
+      "week": "2023-08-14",
+      "actual": 4621.0,
+      "decisionTree": 4358.4522556390975,
+      "randomForest": 4253.556503174604,
+      "baseline": 4703.0
+    },
+    {
+      "week": "2023-08-21",
+      "actual": 4525.0,
+      "decisionTree": 4359.752255639098,
+      "randomForest": 4129.678209090909,
+      "baseline": 4621.0
+    },
+    {
+      "week": "2023-08-28",
+      "actual": 4529.0,
+      "decisionTree": 4305.473684210526,
+      "randomForest": 4205.19151946387,
+      "baseline": 4525.0
+    },
+    {
+      "week": "2023-09-04",
+      "actual": 4182.0,
+      "decisionTree": 4090.4851486192115,
+      "randomForest": 4173.120430303031,
+      "baseline": 4529.0
+    },
+    {
+      "week": "2023-09-11",
+      "actual": 4825.0,
+      "decisionTree": 4208.40939849624,
+      "randomForest": 4123.601512409813,
+      "baseline": 4182.0
+    },
+    {
+      "week": "2023-09-18",
+      "actual": 4921.0,
+      "decisionTree": 4472.252255639098,
+      "randomForest": 4377.578224458874,
+      "baseline": 4825.0
+    },
+    {
+      "week": "2023-09-25",
+      "actual": 4861.0,
+      "decisionTree": 4436.395112781955,
+      "randomForest": 4396.982398701299,
+      "baseline": 4921.0
+    },
+    {
+      "week": "2023-10-02",
+      "actual": 4670.0,
+      "decisionTree": 4499.824436090225,
+      "randomForest": 4362.822248989899,
+      "baseline": 4861.0
+    },
+    {
+      "week": "2023-10-09",
+      "actual": 4135.0,
+      "decisionTree": 4172.87158337019,
+      "randomForest": 4148.3481577922075,
+      "baseline": 4670.0
+    },
+    {
+      "week": "2023-10-16",
+      "actual": 4638.0,
+      "decisionTree": 4059.608646616541,
+      "randomForest": 4158.587964285714,
+      "baseline": 4135.0
+    },
+    {
+      "week": "2023-10-23",
+      "actual": 4691.0,
+      "decisionTree": 4437.695112781955,
+      "randomForest": 4382.538830808082,
+      "baseline": 4638.0
+    },
+    {
+      "week": "2023-10-30",
+      "actual": 4262.0,
+      "decisionTree": 4172.87158337019,
+      "randomForest": 4157.339293506494,
+      "baseline": 4691.0
+    },
+    {
+      "week": "2023-11-06",
+      "actual": 4949.0,
+      "decisionTree": 4094.165789473684,
+      "randomForest": 4022.2285215728707,
+      "baseline": 4262.0
+    },
+    {
+      "week": "2023-11-13",
+      "actual": 4881.0,
+      "decisionTree": 4268.395112781955,
+      "randomForest": 4199.129288744589,
+      "baseline": 4949.0
+    },
+    {
+      "week": "2023-11-20",
+      "actual": 4781.0,
+      "decisionTree": 4169.657017543859,
+      "randomForest": 4394.739972005772,
+      "baseline": 4881.0
+    },
+    {
+      "week": "2023-11-27",
+      "actual": 4855.0,
+      "decisionTree": 4463.967293233082,
+      "randomForest": 4202.963733333332,
+      "baseline": 4781.0
+    },
+    {
+      "week": "2023-12-04",
+      "actual": 4651.0,
+      "decisionTree": 4472.252255639098,
+      "randomForest": 4454.96068015873,
+      "baseline": 4855.0
+    },
+    {
+      "week": "2023-12-11",
+      "actual": 4718.0,
+      "decisionTree": 4236.7800751879695,
+      "randomForest": 4372.140541852592,
+      "baseline": 4651.0
+    },
+    {
+      "week": "2023-12-18",
+      "actual": 4509.0,
+      "decisionTree": 4002.051503759398,
+      "randomForest": 4193.461973382174,
+      "baseline": 4718.0
+    },
+    {
+      "week": "2023-12-25",
+      "actual": 4306.0,
+      "decisionTree": 3988.672932330827,
+      "randomForest": 4014.246118542569,
+      "baseline": 4509.0
+    },
+    {
+      "week": "2024-01-01",
+      "actual": 4414.0,
+      "decisionTree": 4017.700751879699,
+      "randomForest": 3884.8080278499274,
+      "baseline": 4306.0
+    },
+    {
+      "week": "2024-01-08",
+      "actual": 4444.0,
+      "decisionTree": 4454.747493734336,
+      "randomForest": 4332.009937223887,
+      "baseline": 4414.0
+    },
+    {
+      "week": "2024-01-15",
+      "actual": 4668.0,
+      "decisionTree": 4228.860275689223,
+      "randomForest": 4197.981578932179,
+      "baseline": 4444.0
+    },
+    {
+      "week": "2024-01-22",
+      "actual": 4313.0,
+      "decisionTree": 4550.638721804511,
+      "randomForest": 4246.497002525253,
+      "baseline": 4668.0
+    },
+    {
+      "week": "2024-01-29",
+      "actual": 4692.0,
+      "decisionTree": 4341.80388471178,
+      "randomForest": 4042.420071212122,
+      "baseline": 4313.0
+    },
+    {
+      "week": "2024-02-05",
+      "actual": 4790.0,
+      "decisionTree": 4136.597060833903,
+      "randomForest": 4204.531832683983,
+      "baseline": 4692.0
+    },
+    {
+      "week": "2024-02-12",
+      "actual": 3864.0,
+      "decisionTree": 3606.0281690140846,
+      "randomForest": 4568.165598196248,
+      "baseline": 4790.0
+    },
+    {
+      "week": "2024-02-19",
+      "actual": 4519.0,
+      "decisionTree": 3969.4364661654135,
+      "randomForest": 3903.072854184705,
+      "baseline": 3864.0
+    },
+    {
+      "week": "2024-02-26",
+      "actual": 4740.0,
+      "decisionTree": 4324.7515037593985,
+      "randomForest": 4344.8226646464655,
+      "baseline": 4519.0
+    },
+    {
+      "week": "2024-03-04",
+      "actual": 4410.0,
+      "decisionTree": 4437.695112781955,
+      "randomForest": 4536.155098196248,
+      "baseline": 4740.0
+    },
+    {
+      "week": "2024-03-11",
+      "actual": 4820.0,
+      "decisionTree": 4280.43007518797,
+      "randomForest": 4124.745993001443,
+      "baseline": 4410.0
+    },
+    {
+      "week": "2024-03-18",
+      "actual": 4488.0,
+      "decisionTree": 4092.218943376139,
+      "randomForest": 4372.563766666666,
+      "baseline": 4820.0
+    },
+    {
+      "week": "2024-03-25",
+      "actual": 3702.0,
+      "decisionTree": 3983.445112781955,
+      "randomForest": 4067.4851402097897,
+      "baseline": 4488.0
+    },
+    {
+      "week": "2024-04-01",
+      "actual": 4324.0,
+      "decisionTree": 3955.3360637509268,
+      "randomForest": 3977.965145382395,
+      "baseline": 3702.0
+    },
+    {
+      "week": "2024-04-08",
+      "actual": 4526.0,
+      "decisionTree": 4087.2412491405503,
+      "randomForest": 4222.446407864358,
+      "baseline": 4324.0
+    },
+    {
+      "week": "2024-04-15",
+      "actual": 4357.0,
+      "decisionTree": 4300.808364661654,
+      "randomForest": 4311.855185281385,
+      "baseline": 4526.0
+    },
+    {
+      "week": "2024-04-22",
+      "actual": 4348.0,
+      "decisionTree": 4258.943327067669,
+      "randomForest": 4034.6103864357865,
+      "baseline": 4357.0
+    },
+    {
+      "week": "2024-04-29",
+      "actual": 4220.0,
+      "decisionTree": 3817.7727756892227,
+      "randomForest": 3870.3694292929285,
+      "baseline": 4348.0
+    },
+    {
+      "week": "2024-05-06",
+      "actual": 4423.0,
+      "decisionTree": 3973.5395989974936,
+      "randomForest": 4085.8657435064943,
+      "baseline": 4220.0
+    },
+    {
+      "week": "2024-05-13",
+      "actual": 4584.0,
+      "decisionTree": 4245.508646616541,
+      "randomForest": 4220.247819191919,
+      "baseline": 4423.0
+    },
+    {
+      "week": "2024-05-20",
+      "actual": 4361.0,
+      "decisionTree": 4218.133229090425,
+      "randomForest": 4168.600442063492,
+      "baseline": 4584.0
+    },
+    {
+      "week": "2024-05-27",
+      "actual": 3500.0,
+      "decisionTree": 3933.7593984962405,
+      "randomForest": 4110.401083893884,
+      "baseline": 4361.0
+    },
+    {
+      "week": "2024-06-03",
+      "actual": 4556.0,
+      "decisionTree": 3807.202908804416,
+      "randomForest": 4028.6902541125532,
+      "baseline": 3500.0
+    },
+    {
+      "week": "2024-06-10",
+      "actual": 4698.0,
+      "decisionTree": 4137.9467418546365,
+      "randomForest": 4235.737719047619,
+      "baseline": 4556.0
+    },
+    {
+      "week": "2024-06-17",
+      "actual": 4782.0,
+      "decisionTree": 4042.9515037593983,
+      "randomForest": 4169.257312265512,
+      "baseline": 4698.0
+    },
+    {
+      "week": "2024-06-24",
+      "actual": 4629.0,
+      "decisionTree": 4186.40939849624,
+      "randomForest": 4232.748459090909,
+      "baseline": 4782.0
+    },
+    {
+      "week": "2024-07-01",
+      "actual": 4307.0,
+      "decisionTree": 4230.464755639097,
+      "randomForest": 4427.609837301587,
+      "baseline": 4629.0
+    },
+    {
+      "week": "2024-07-08",
+      "actual": 4155.0,
+      "decisionTree": 4009.298391997693,
+      "randomForest": 4161.131812049061,
+      "baseline": 4307.0
+    },
+    {
+      "week": "2024-07-15",
+      "actual": 4023.0,
+      "decisionTree": 3950.922394345111,
+      "randomForest": 4162.271955483405,
+      "baseline": 4155.0
+    },
+    {
+      "week": "2024-07-22",
+      "actual": 4448.0,
+      "decisionTree": 4106.6789208937835,
+      "randomForest": 3799.787084776334,
+      "baseline": 4023.0
+    },
+    {
+      "week": "2024-07-29",
+      "actual": 4653.0,
+      "decisionTree": 4341.80388471178,
+      "randomForest": 4154.83161038961,
+      "baseline": 4448.0
+    },
+    {
+      "week": "2024-08-05",
+      "actual": 4521.0,
+      "decisionTree": 4220.558646616541,
+      "randomForest": 4102.511627417028,
+      "baseline": 4653.0
+    },
+    {
+      "week": "2024-08-12",
+      "actual": 4715.0,
+      "decisionTree": 4213.393327067669,
+      "randomForest": 4122.639400793651,
+      "baseline": 4521.0
+    },
+    {
+      "week": "2024-08-19",
+      "actual": 4729.0,
+      "decisionTree": 4472.252255639098,
+      "randomForest": 4407.852793145743,
+      "baseline": 4715.0
+    },
+    {
+      "week": "2024-08-26",
+      "actual": 4787.0,
+      "decisionTree": 4663.582330827067,
+      "randomForest": 4460.441642857144,
+      "baseline": 4729.0
+    },
+    {
+      "week": "2024-09-02",
+      "actual": 4976.0,
+      "decisionTree": 4298.995864661654,
+      "randomForest": 4259.214323448774,
+      "baseline": 4787.0
+    },
+    {
+      "week": "2024-09-09",
+      "actual": 5166.0,
+      "decisionTree": 4698.13947368421,
+      "randomForest": 4570.165328571428,
+      "baseline": 4976.0
+    },
+    {
+      "week": "2024-09-16",
+      "actual": 4871.0,
+      "decisionTree": 4567.2180451127815,
+      "randomForest": 4596.069135209235,
+      "baseline": 5166.0
+    },
+    {
+      "week": "2024-09-23",
+      "actual": 5188.0,
+      "decisionTree": 4436.395112781955,
+      "randomForest": 4508.189056421356,
+      "baseline": 4871.0
+    },
+    {
+      "week": "2024-09-30",
+      "actual": 5068.0,
+      "decisionTree": 4698.13947368421,
+      "randomForest": 4778.489613780664,
+      "baseline": 5188.0
+    },
+    {
+      "week": "2024-10-07",
+      "actual": 5070.0,
+      "decisionTree": 4549.338721804511,
+      "randomForest": 4458.704540909091,
+      "baseline": 5068.0
+    },
+    {
+      "week": "2024-10-14",
+      "actual": 4904.0,
+      "decisionTree": 4345.481578947369,
+      "randomForest": 4624.506705772006,
+      "baseline": 5070.0
+    },
+    {
+      "week": "2024-10-21",
+      "actual": 5120.0,
+      "decisionTree": 4699.4394736842105,
+      "randomForest": 4700.253472294373,
+      "baseline": 4904.0
+    },
+    {
+      "week": "2024-10-28",
+      "actual": 4546.0,
+      "decisionTree": 3980.8951127819546,
+      "randomForest": 4541.077231168831,
+      "baseline": 5120.0
+    },
+    {
+      "week": "2024-11-04",
+      "actual": 4844.0,
+      "decisionTree": 4446.366138938896,
+      "randomForest": 4298.133781818182,
+      "baseline": 4546.0
+    },
+    {
+      "week": "2024-11-11",
+      "actual": 4468.0,
+      "decisionTree": 4114.726086233282,
+      "randomForest": 4224.728688644688,
+      "baseline": 4844.0
+    },
+    {
+      "week": "2024-11-18",
+      "actual": 4625.0,
+      "decisionTree": 4024.1800751879696,
+      "randomForest": 4223.610338184038,
+      "baseline": 4468.0
+    },
+    {
+      "week": "2024-11-25",
+      "actual": 4883.0,
+      "decisionTree": 4467.274436090225,
+      "randomForest": 4157.445785353536,
+      "baseline": 4625.0
+    },
+    {
+      "week": "2024-12-02",
+      "actual": 4879.0,
+      "decisionTree": 4386.403884711779,
+      "randomForest": 4282.0034686868685,
+      "baseline": 4883.0
+    },
+    {
+      "week": "2024-12-09",
+      "actual": 4687.0,
+      "decisionTree": 4463.967293233082,
+      "randomForest": 4209.293381818182,
+      "baseline": 4879.0
+    },
+    {
+      "week": "2024-12-16",
+      "actual": 4544.0,
+      "decisionTree": 4236.7800751879695,
+      "randomForest": 4264.888137157287,
+      "baseline": 4687.0
+    },
+    {
+      "week": "2024-12-23",
+      "actual": 4074.0,
+      "decisionTree": 3804.0936090225564,
+      "randomForest": 4065.189604617605,
+      "baseline": 4544.0
+    },
+    {
       "week": "2024-12-30",
-      "actual": 2979.0,
-      "predicted": 2740.946751530822
+      "actual": 4038.0,
+      "decisionTree": 3892.4317042606517,
+      "randomForest": 3844.3805781385277,
+      "baseline": 4074.0
     },
     {
       "week": "2025-01-06",
       "actual": 4631.0,
-      "predicted": 4450.395343094813
+      "decisionTree": 4096.288847117795,
+      "randomForest": 3962.3399968975464,
+      "baseline": 4038.0
     },
     {
       "week": "2025-01-13",
       "actual": 4701.0,
-      "predicted": 4584.973746741169
+      "decisionTree": 4437.695112781955,
+      "randomForest": 4263.808968181818,
+      "baseline": 4631.0
     },
     {
       "week": "2025-01-20",
       "actual": 5062.0,
-      "predicted": 4688.320943018094
+      "decisionTree": 4480.045112781954,
+      "randomForest": 4230.365223953824,
+      "baseline": 4701.0
     },
     {
       "week": "2025-01-27",
       "actual": 5107.0,
-      "predicted": 4780.140425702076
+      "decisionTree": 4733.2728070175435,
+      "randomForest": 4332.228945959597,
+      "baseline": 5062.0
     },
     {
       "week": "2025-02-03",
       "actual": 5003.0,
-      "predicted": 4755.109755150405
+      "decisionTree": 4705.932330827068,
+      "randomForest": 4558.547038744589,
+      "baseline": 5107.0
     },
     {
       "week": "2025-02-10",
       "actual": 5518.0,
-      "predicted": 4888.084835497837
+      "decisionTree": 4775.622807017544,
+      "randomForest": 4607.34413008658,
+      "baseline": 5003.0
     },
     {
       "week": "2025-02-17",
       "actual": 5542.0,
-      "predicted": 4956.247457975358
+      "decisionTree": 4816.1509760316285,
+      "randomForest": 4948.259454761904,
+      "baseline": 5518.0
     },
     {
       "week": "2025-02-24",
       "actual": 5308.0,
-      "predicted": 4613.324223282273
+      "decisionTree": 4288.845864661654,
+      "randomForest": 4654.44411010101,
+      "baseline": 5542.0
     },
     {
       "week": "2025-03-03",
       "actual": 4176.0,
-      "predicted": 4474.353798784548
+      "decisionTree": 3865.7487203925302,
+      "randomForest": 4771.805021572871,
+      "baseline": 5308.0
     },
     {
       "week": "2025-03-10",
       "actual": 4986.0,
-      "predicted": 4547.416323678935
+      "decisionTree": 4230.013408521303,
+      "randomForest": 4307.743523115773,
+      "baseline": 4176.0
     },
     {
       "week": "2025-03-17",
       "actual": 5120.0,
-      "predicted": 4631.273764718615
+      "decisionTree": 4382.638721804511,
+      "randomForest": 4681.959394039293,
+      "baseline": 4986.0
     },
     {
       "week": "2025-03-24",
       "actual": 5232.0,
-      "predicted": 4953.025087284939
+      "decisionTree": 4741.78947368421,
+      "randomForest": 4860.340554301254,
+      "baseline": 5120.0
     },
     {
       "week": "2025-03-31",
       "actual": 4966.0,
-      "predicted": 4746.551519619269
+      "decisionTree": 4698.13947368421,
+      "randomForest": 4560.36475060495,
+      "baseline": 5232.0
     },
     {
       "week": "2025-04-07",
       "actual": 4910.0,
-      "predicted": 4705.616636297854
+      "decisionTree": 4435.488721804511,
+      "randomForest": 4578.887397857697,
+      "baseline": 4966.0
     },
     {
       "week": "2025-04-14",
       "actual": 4420.0,
-      "predicted": 4483.718094282514
+      "decisionTree": 4285.815192392746,
+      "randomForest": 4389.154026900877,
+      "baseline": 4910.0
     },
     {
       "week": "2025-04-21",
       "actual": 4297.0,
-      "predicted": 4467.283175139567
+      "decisionTree": 3988.322932330827,
+      "randomForest": 4222.975333333334,
+      "baseline": 4420.0
     },
     {
       "week": "2025-04-28",
       "actual": 4069.0,
-      "predicted": 4195.863508078033
+      "decisionTree": 3830.385144312394,
+      "randomForest": 4170.045721067821,
+      "baseline": 4297.0
     },
     {
       "week": "2025-05-05",
       "actual": 4769.0,
-      "predicted": 4634.555002191274
+      "decisionTree": 4150.162374686717,
+      "randomForest": 4205.840036002886,
+      "baseline": 4069.0
     },
     {
       "week": "2025-05-12",
       "actual": 4542.0,
-      "predicted": 4562.891512961059
+      "decisionTree": 4358.205409541553,
+      "randomForest": 4376.889702813853,
+      "baseline": 4769.0
     },
     {
       "week": "2025-05-19",
       "actual": 4611.0,
-      "predicted": 4493.9166518194215
+      "decisionTree": 4105.189620067868,
+      "randomForest": 4234.9043738816745,
+      "baseline": 4542.0
     },
     {
       "week": "2025-05-26",
       "actual": 4534.0,
-      "predicted": 4553.077699578201
+      "decisionTree": 4073.465789473684,
+      "randomForest": 4210.063072727273,
+      "baseline": 4611.0
     },
     {
       "week": "2025-06-02",
       "actual": 4638.0,
-      "predicted": 4658.810236617956
+      "decisionTree": 4183.1324772107255,
+      "randomForest": 4371.34930021645,
+      "baseline": 4534.0
     },
     {
       "week": "2025-06-09",
       "actual": 4428.0,
-      "predicted": 4448.512358075259
+      "decisionTree": 4268.838721804511,
+      "randomForest": 4250.371199134201,
+      "baseline": 4638.0
     },
     {
       "week": "2025-06-16",
       "actual": 4019.0,
-      "predicted": 4190.577101720339
+      "decisionTree": 3749.5760862332822,
+      "randomForest": 4057.472792496392,
+      "baseline": 4428.0
     },
     {
       "week": "2025-06-23",
       "actual": 4558.0,
-      "predicted": 4561.528176837053
+      "decisionTree": 4080.4718984962406,
+      "randomForest": 4205.609113997114,
+      "baseline": 4019.0
     },
     {
       "week": "2025-06-30",
       "actual": 4640.0,
-      "predicted": 4614.339503601955
+      "decisionTree": 4376.804636591479,
+      "randomForest": 4329.468132972584,
+      "baseline": 4558.0
     },
     {
       "week": "2025-07-07",
       "actual": 4506.0,
-      "predicted": 4526.247862897234
+      "decisionTree": 4105.189620067868,
+      "randomForest": 4195.398285642135,
+      "baseline": 4640.0
     },
     {
       "week": "2025-07-14",
       "actual": 4577.0,
-      "predicted": 4524.0667023022725
+      "decisionTree": 4210.199874686717,
+      "randomForest": 4187.127022150072,
+      "baseline": 4506.0
     },
     {
       "week": "2025-07-21",
       "actual": 4736.0,
-      "predicted": 4604.967333666334
+      "decisionTree": 4232.671146616542,
+      "randomForest": 4217.936846103896,
+      "baseline": 4577.0
     },
     {
       "week": "2025-07-28",
       "actual": 4738.0,
-      "predicted": 4585.904972943723
+      "decisionTree": 4549.338721804511,
+      "randomForest": 4332.119524747475,
+      "baseline": 4736.0
     },
     {
       "week": "2025-08-04",
       "actual": 4955.0,
-      "predicted": 4679.752434508955
+      "decisionTree": 4133.030827067669,
+      "randomForest": 4248.129262193363,
+      "baseline": 4738.0
     },
     {
       "week": "2025-08-11",
       "actual": 4968.0,
-      "predicted": 4769.435773048195
+      "decisionTree": 4584.33947368421,
+      "randomForest": 4435.497874819625,
+      "baseline": 4955.0
     },
     {
       "week": "2025-08-18",
       "actual": 5481.0,
-      "predicted": 4866.201775826951
+      "decisionTree": 4699.4394736842105,
+      "randomForest": 4468.342174314575,
+      "baseline": 4968.0
     },
     {
       "week": "2025-08-25",
       "actual": 5497.0,
-      "predicted": 4918.751431518483
+      "decisionTree": 4698.13947368421,
+      "randomForest": 4616.031389033189,
+      "baseline": 5481.0
     },
     {
       "week": "2025-09-01",
       "actual": 5134.0,
-      "predicted": 4798.4392754218
+      "decisionTree": 4605.646616541353,
+      "randomForest": 4580.864706637806,
+      "baseline": 5497.0
     },
     {
       "week": "2025-09-08",
       "actual": 5369.0,
-      "predicted": 4908.504943942169
+      "decisionTree": 4586.495864661654,
+      "randomForest": 4556.096796336996,
+      "baseline": 5134.0
     },
     {
       "week": "2025-09-15",
       "actual": 5244.0,
-      "predicted": 5010.339658901227
+      "decisionTree": 4662.282330827067,
+      "randomForest": 4928.22540122655,
+      "baseline": 5369.0
     },
     {
       "week": "2025-09-22",
       "actual": 5174.0,
-      "predicted": 4803.133553096903
+      "decisionTree": 4381.338721804511,
+      "randomForest": 4893.404099666998,
+      "baseline": 5244.0
     },
     {
       "week": "2025-09-29",
       "actual": 5154.0,
-      "predicted": 4940.223043141988
+      "decisionTree": 4662.282330827067,
+      "randomForest": 4672.127144300143,
+      "baseline": 5174.0
     },
     {
       "week": "2025-10-06",
       "actual": 5082.0,
-      "predicted": 4794.154024969473
+      "decisionTree": 4559.38947368421,
+      "randomForest": 4530.020567893217,
+      "baseline": 5154.0
     },
     {
       "week": "2025-10-13",
       "actual": 4943.0,
-      "predicted": 4882.740410367409
+      "decisionTree": 4367.22963089542,
+      "randomForest": 4771.9886727272715,
+      "baseline": 5082.0
     },
     {
       "week": "2025-10-20",
       "actual": 4660.0,
-      "predicted": 4746.491715300384
+      "decisionTree": 4709.1894736842105,
+      "randomForest": 4654.966267554667,
+      "baseline": 4943.0
     },
     {
       "week": "2025-10-27",
       "actual": 4380.0,
-      "predicted": 4405.482617911502
+      "decisionTree": 3733.800751879699,
+      "randomForest": 4227.795490981241,
+      "baseline": 4660.0
     },
     {
       "week": "2025-11-03",
       "actual": 4471.0,
-      "predicted": 4422.959842129112
+      "decisionTree": 4052.8197994987468,
+      "randomForest": 4140.076696991898,
+      "baseline": 4380.0
     },
     {
       "week": "2025-11-10",
       "actual": 4424.0,
-      "predicted": 4582.90746807539
+      "decisionTree": 4341.80388471178,
+      "randomForest": 4093.72036969697,
+      "baseline": 4471.0
     },
     {
       "week": "2025-11-17",
       "actual": 3806.0,
-      "predicted": 4251.167044351728
+      "decisionTree": 4059.9279743476336,
+      "randomForest": 3910.0461437950935,
+      "baseline": 4424.0
     },
     {
       "week": "2025-11-24",
       "actual": 4250.0,
-      "predicted": 4362.790230897534
+      "decisionTree": 3818.158206263322,
+      "randomForest": 3711.3885858086364,
+      "baseline": 3806.0
     },
     {
       "week": "2025-12-01",
       "actual": 3794.0,
-      "predicted": 4399.434426341959
+      "decisionTree": 4116.195989974937,
+      "randomForest": 4137.052831313132,
+      "baseline": 4250.0
     },
     {
       "week": "2025-12-08",
       "actual": 3030.0,
-      "predicted": 4003.8525156177147
+      "decisionTree": 3681.4884657736825,
+      "randomForest": 3737.1891746864244,
+      "baseline": 3794.0
     },
     {
       "week": "2025-12-15",
       "actual": 2295.0,
-      "predicted": 3334.080944909666
+      "decisionTree": 3011.4713156751736,
+      "randomForest": 3158.864019463869,
+      "baseline": 3030.0
     },
     {
       "week": "2025-12-22",
       "actual": 1317.0,
-      "predicted": 3236.4617060984765
+      "decisionTree": 2621.07213622291,
+      "randomForest": 3197.1114254467757,
+      "baseline": 2295.0
     },
     {
       "week": "2025-12-29",
       "actual": 438.0,
-      "predicted": 1273.163185714286
+      "decisionTree": 1308.4705882352941,
+      "randomForest": 1367.7891801587302,
+      "baseline": 717.0
     }
   ],
-  "featureImportance": [
+  "examples": [
     {
-      "feature": "dv_reports_previous_week",
-      "label": "Same weekday last week",
-      "importance": 0.656738472518762
+      "date": "2023-03-15",
+      "context": "Ordinary weekday",
+      "actual": 668.0,
+      "decisionTree": 620.2142857142857,
+      "randomForest": 611.142014285714,
+      "lag1": 692.0,
+      "lag7": 629.0,
+      "lag28": 672.0
     },
     {
-      "feature": "dv_reports_previous_4_weeks",
-      "label": "Same weekday four weeks earlier",
-      "importance": 0.2278921218490833
+      "date": "2024-07-07",
+      "context": "Non-holiday weekend",
+      "actual": 392.0,
+      "decisionTree": 395.0,
+      "randomForest": 402.08596190476175,
+      "lag1": 376.0,
+      "lag7": 409.0,
+      "lag28": 447.0
     },
     {
-      "feature": "dv_reports_previous_day",
-      "label": "Previous day volume",
-      "importance": 0.04569741741596959
-    },
-    {
-      "feature": "days_since_start",
-      "label": "Long-term time trend",
-      "importance": 0.03114220072523178
-    },
-    {
-      "feature": "is_calendar_event",
-      "label": "Calendar event",
-      "importance": 0.013483457760822775
-    },
-    {
-      "feature": "is_national_holiday",
-      "label": "National holiday",
-      "importance": 0.007375511081745477
-    },
-    {
-      "feature": "day_of_week_number",
-      "label": "Day of week",
-      "importance": 0.0071491798115996
-    },
-    {
-      "feature": "month_number",
-      "label": "Month",
-      "importance": 0.005822387054267067
-    },
-    {
-      "feature": "is_weekend",
-      "label": "Weekend",
-      "importance": 0.0031996875535369616
-    },
-    {
-      "feature": "quarter_number",
-      "label": "Quarter",
-      "importance": 0.0014995642289814192
+      "date": "2025-12-25",
+      "context": "National holiday",
+      "actual": 166.0,
+      "decisionTree": 256.0,
+      "randomForest": 333.69198261183254,
+      "lag1": 137.0,
+      "lag7": 331.0,
+      "lag28": 514.0
     }
-  ]
+  ],
+  "featureImportance": {
+    "decisionTree": [
+      {
+        "feature": "dv_reports_previous_week",
+        "label": "Same weekday last week",
+        "importance": 0.7455773582435047,
+        "maeIncrease": 68.98611941529273
+      },
+      {
+        "feature": "is_calendar_event",
+        "label": "Calendar event",
+        "importance": 0.12199677663808534,
+        "maeIncrease": 11.288009363995556
+      },
+      {
+        "feature": "dv_reports_previous_4_weeks",
+        "label": "Same weekday four weeks earlier",
+        "importance": 0.09614980667367505,
+        "maeIncrease": 8.896463890177747
+      },
+      {
+        "feature": "dv_reports_previous_day",
+        "label": "Previous day volume",
+        "importance": 0.035085021391523516,
+        "maeIncrease": 3.246315688966038
+      },
+      {
+        "feature": "month_number",
+        "label": "Month",
+        "importance": 0.0011910370532114511,
+        "maeIncrease": 0.11020321831453543
+      },
+      {
+        "feature": "day_of_week_number",
+        "label": "Day of week",
+        "importance": 0.0,
+        "maeIncrease": 0.0
+      },
+      {
+        "feature": "is_weekend",
+        "label": "Weekend",
+        "importance": 0.0,
+        "maeIncrease": 0.0
+      },
+      {
+        "feature": "quarter_number",
+        "label": "Quarter",
+        "importance": 0.0,
+        "maeIncrease": 0.0
+      },
+      {
+        "feature": "days_since_start",
+        "label": "Long-term time trend",
+        "importance": 0.0,
+        "maeIncrease": 0.0
+      },
+      {
+        "feature": "is_national_holiday",
+        "label": "National holiday",
+        "importance": 0.0,
+        "maeIncrease": 0.0
+      }
+    ],
+    "randomForest": [
+      {
+        "feature": "dv_reports_previous_week",
+        "label": "Same weekday last week",
+        "importance": 0.6856199517140278,
+        "maeIncrease": 66.81751186857142
+      },
+      {
+        "feature": "dv_reports_previous_4_weeks",
+        "label": "Same weekday four weeks earlier",
+        "importance": 0.23926692126083182,
+        "maeIncrease": 23.317904199162577
+      },
+      {
+        "feature": "is_calendar_event",
+        "label": "Calendar event",
+        "importance": 0.023310919850070843,
+        "maeIncrease": 2.271779956017224
+      },
+      {
+        "feature": "is_national_holiday",
+        "label": "National holiday",
+        "importance": 0.017498368313982875,
+        "maeIncrease": 1.7053141898470556
+      },
+      {
+        "feature": "is_weekend",
+        "label": "Weekend",
+        "importance": 0.01382249389606995,
+        "maeIncrease": 1.3470795994850762
+      },
+      {
+        "feature": "dv_reports_previous_day",
+        "label": "Previous day volume",
+        "importance": 0.009090072234504875,
+        "maeIncrease": 0.8858785510788891
+      },
+      {
+        "feature": "month_number",
+        "label": "Month",
+        "importance": 0.008130226362739522,
+        "maeIncrease": 0.7923361843955007
+      },
+      {
+        "feature": "day_of_week_number",
+        "label": "Day of week",
+        "importance": 0.0032610463677724038,
+        "maeIncrease": 0.3178072689364768
+      },
+      {
+        "feature": "quarter_number",
+        "label": "Quarter",
+        "importance": 0.0,
+        "maeIncrease": 0.0
+      },
+      {
+        "feature": "days_since_start",
+        "label": "Long-term time trend",
+        "importance": 0.0,
+        "maeIncrease": 0.0
+      }
+    ]
+  }
 }
