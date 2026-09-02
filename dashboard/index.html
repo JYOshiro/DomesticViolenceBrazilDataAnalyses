@@ -32,6 +32,29 @@
             <small id="coverageNote"></small>
           </aside>
         </div>
+        <figure class="process-cycle" aria-labelledby="processCycleTitle">
+          <figcaption><p class="eyebrow">HOW THE INVESTIGATION MOVED</p><h2 id="processCycleTitle">Each result either answered the question—or changed the next one.</h2><p>The project followed a repeatable evidence cycle rather than a straight path to a predetermined conclusion.</p></figcaption>
+          <div class="process-map" role="list" aria-label="Investigation process cycle">
+            <article class="process-node process-start" role="listitem"><small>Start</small><strong>Initial assumption</strong></article>
+            <article class="process-node process-question" role="listitem"><small>Frame</small><strong>Ask a testable question</strong></article>
+            <article class="process-node process-gather" role="listitem"><small>Evidence</small><strong>Gather information</strong></article>
+            <article class="process-node process-prepare" role="listitem"><small>Method</small><strong>Clean and prepare data</strong></article>
+            <article class="process-node process-analyse" role="listitem"><small>Test</small><strong>Analyse the evidence</strong></article>
+            <article class="process-node process-decision" role="listitem"><div><small>Decision</small><strong>Does this answer the question?</strong><em>No → revise the question</em></div></article>
+            <article class="process-node process-end" role="listitem"><small>Yes</small><strong>Conclude carefully</strong></article>
+            <svg class="process-connectors" viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true">
+              <defs><marker id="processArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"></path></marker></defs>
+              <path d="M90 56 V110"></path>
+              <path d="M90 174 V230"></path>
+              <path d="M180 262 H230"></path>
+              <path d="M410 262 H460"></path>
+              <path d="M640 262 H760 V214"></path>
+              <path d="M830 142 H860"></path>
+              <path class="process-loop" d="M690 142 H430 V96 H180 V142"></path>
+            </svg>
+            <span class="process-yes" aria-hidden="true">Yes</span><span class="process-no" aria-hidden="true">No — ask again</span>
+          </div>
+        </figure>
         <ol class="investigation-rail" aria-label="Investigation path">
           <li><span>1</span><b>Beer sales</b><small>No clear relationship</small></li><li><span>2</span><b>Understand reports</b><small>A broader population</small></li>
           <li><span>3</span><b>2020–21 break</b><small>Methods changed</small></li><li><span>4</span><b>Add SINAN</b><small>Direct alcohol field</small></li>
