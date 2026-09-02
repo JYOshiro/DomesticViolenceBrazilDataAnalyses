@@ -34,25 +34,37 @@
         </div>
         <figure class="process-cycle" aria-labelledby="processCycleTitle">
           <figcaption><p class="eyebrow">HOW THE INVESTIGATION MOVED</p><h2 id="processCycleTitle">Each result either answered the question—or changed the next one.</h2><p>The project followed a repeatable evidence cycle rather than a straight path to a predetermined conclusion.</p></figcaption>
-          <div class="process-map" role="list" aria-label="Investigation process cycle">
-            <article class="process-node process-start" role="listitem"><small>Start</small><strong>Initial assumption</strong></article>
-            <article class="process-node process-question" role="listitem"><small>Frame</small><strong>Ask a testable question</strong></article>
-            <article class="process-node process-gather" role="listitem"><small>Evidence</small><strong>Gather information</strong></article>
-            <article class="process-node process-prepare" role="listitem"><small>Method</small><strong>Clean and prepare data</strong></article>
-            <article class="process-node process-analyse" role="listitem"><small>Test</small><strong>Analyse the evidence</strong></article>
-            <article class="process-node process-decision" role="listitem"><div><small>Decision</small><strong>Does this answer the question?</strong><em>No → revise the question</em></div></article>
-            <article class="process-node process-end" role="listitem"><small>Yes</small><strong>Conclude carefully</strong></article>
-            <svg class="process-connectors" viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true">
-              <defs><marker id="processArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"></path></marker></defs>
-              <path d="M90 56 V110"></path>
-              <path d="M90 174 V230"></path>
-              <path d="M180 262 H230"></path>
-              <path d="M410 262 H460"></path>
-              <path d="M640 262 H760 V214"></path>
-              <path d="M830 142 H860"></path>
-              <path class="process-loop" d="M690 142 H430 V96 H180 V142"></path>
-            </svg>
-            <span class="process-yes" aria-hidden="true">Yes</span><span class="process-no" aria-hidden="true">No — ask again</span>
+          <div class="process-map">
+            <pre class="mermaid">
+flowchart LR
+  accTitle: Investigation evidence cycle
+  accDescr: The investigation moves from an initial assumption through a question, evidence gathering, data preparation and analysis. A result that answers the question leads to a careful conclusion; otherwise the process returns to the question.
+
+  A["START<br/>Initial assumption"] --> B["FRAME<br/>Ask a testable question"]
+  B --> C["EVIDENCE<br/>Gather information"]
+  C --> D["METHOD<br/>Clean and prepare data"]
+  D --> E["TEST<br/>Analyse the evidence"]
+  E --> F{"DECISION<br/>Does this answer the question?"}
+  F -->|Yes| G["END<br/>Conclude carefully"]
+  F -.->|No — ask again| B
+
+  class A start
+  class B question
+  class C gather
+  class D prepare
+  class E analyse
+  class F decision
+  class G finish
+
+  classDef start fill:#65aee8,stroke:#65aee8,color:#0d151b,stroke-width:2px
+  classDef question fill:#1a2a33,stroke:#45c6b3,color:#f1f4f2,stroke-width:3px
+  classDef gather fill:#1a2a33,stroke:#45c6b3,color:#f1f4f2,stroke-width:2px
+  classDef prepare fill:#1a2a33,stroke:#e4b554,color:#f1f4f2,stroke-width:2px
+  classDef analyse fill:#1a2a33,stroke:#ec765c,color:#f1f4f2,stroke-width:2px
+  classDef decision fill:#ec765c,stroke:#ec765c,color:#0d151b,stroke-width:2px
+  classDef finish fill:#e4b554,stroke:#e4b554,color:#0d151b,stroke-width:2px
+  linkStyle 6 stroke:#45c6b3,stroke-width:2px,stroke-dasharray:6 5
+            </pre>
           </div>
         </figure>
         <ol class="investigation-rail" aria-label="Investigation path">
@@ -162,6 +174,6 @@
     </main>
 
     <footer>Jessica Oshiro’s DATA6000 capstone. Data cleaning and preparation by Jessica Oshiro. The site describes recorded reports and notifications; it does not estimate prevalence or prove causation.</footer>
-    <script src="data/dashboard-data.js"></script><script src="data/prediction-data.js"></script><script src="app.js"></script>
+    <script src="vendor/mermaid.min.js"></script><script src="diagram.js"></script><script src="data/dashboard-data.js"></script><script src="data/prediction-data.js"></script><script src="app.js"></script>
   </body>
 </html>

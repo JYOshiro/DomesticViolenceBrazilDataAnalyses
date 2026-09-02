@@ -974,62 +974,20 @@ footer {
 .process-cycle figcaption > p:last-child { max-width: 760px; margin: 12px 0 0; color: var(--muted); }
 
 .process-map {
-  position: relative;
   width: 100%;
-  min-height: 300px;
   margin-top: 28px;
+  padding: 8px 0 4px;
+  overflow-x: auto;
+  scrollbar-color: var(--line) transparent;
 }
 
-.process-node {
-  position: absolute;
-  z-index: 2;
-  display: grid;
-  width: 18%;
-  min-height: 64px;
-  padding: 12px 14px;
-  align-content: center;
-  background: var(--surface-raised);
-  border: 1px solid var(--line);
-}
-
-.process-node small,
-.process-node strong { display: block; }
-.process-node small { color: var(--muted); font: 600 10px 'DM Mono', monospace; letter-spacing: 0.8px; text-transform: uppercase; }
-.process-node strong { margin-top: 4px; font-size: clamp(12px, 1.15vw, 15px); line-height: 1.3; }
-.process-start { top: 0; left: 0; color: var(--paper); background: var(--navy); border-color: var(--navy); }
-.process-start small,
-.process-end small { color: rgba(13, 21, 27, 0.68); }
-.process-question { top: 110px; left: 0; border-left: 4px solid var(--teal); }
-.process-gather { top: 230px; left: 0; border-top: 4px solid var(--teal); }
-.process-prepare { top: 230px; left: 23%; border-top: 4px solid var(--gold); }
-.process-analyse { top: 230px; left: 46%; border-top: 4px solid var(--rust); }
-.process-end { top: 110px; left: 86%; width: 14%; color: var(--paper); background: var(--gold); border-color: var(--gold); }
-
-.process-decision {
-  top: 72px;
-  left: 69%;
-  width: 14%;
-  min-height: 140px;
-  padding: 25px;
-  color: var(--paper);
-  background: var(--rust);
-  border: 0;
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-}
-
-.process-decision div { text-align: center; }
-.process-decision small { color: rgba(13, 21, 27, 0.68); }
-.process-decision strong { font-size: clamp(11px, 1vw, 14px); }
-.process-decision em { display: none; }
-
-.process-connectors { position: absolute; inset: 0; z-index: 1; width: 100%; height: 300px; overflow: visible; pointer-events: none; }
-.process-connectors > path { fill: none; stroke: var(--muted); stroke-width: 1.5; vector-effect: non-scaling-stroke; marker-end: url(#processArrow); }
-.process-connectors marker path { fill: var(--muted); stroke: none; }
-.process-connectors .process-loop { stroke: var(--teal); stroke-dasharray: 6 5; }
-.process-yes,
-.process-no { position: absolute; z-index: 3; padding: 2px 6px; color: var(--ink); background: var(--panel); font: 600 11px 'DM Mono', monospace; }
-.process-yes { top: 126px; left: 83%; }
-.process-no { top: 75px; left: 39%; color: var(--teal); }
+.process-map pre { margin: 0; }
+.process-map svg { display: block; width: 100%; min-width: 1120px; height: auto; margin: 0 auto; overflow: visible; }
+.process-map .nodeLabel { font-size: 22px !important; font-weight: 600; }
+.process-map .nodeLabel p { line-height: 1.35; }
+.process-map .edgeLabel { font-family: 'DM Mono', monospace; font-size: 20px !important; font-weight: 700; }
+.process-map .edgeLabel p { padding: 5px 9px; background: var(--panel) !important; font-size: 20px !important; }
+.process-map .edgePath .path { stroke-linecap: round; stroke-linejoin: round; }
 
 .investigation-rail {
   display: grid;
@@ -1298,31 +1256,7 @@ footer {
 
 @media (max-width: 900px) {
   .process-cycle { padding: 20px; }
-  .process-map { display: grid; gap: 28px; min-height: 0; }
-  .process-node {
-    position: relative;
-    inset: auto;
-    width: 100%;
-    min-height: 70px;
-    clip-path: none;
-  }
-  .process-node:not(.process-end)::after {
-    content: '↓';
-    position: absolute;
-    right: 50%;
-    bottom: -27px;
-    color: var(--muted);
-    transform: translateX(50%);
-  }
-  .process-decision { color: var(--ink); background: rgba(236, 118, 92, 0.14); border: 1px solid var(--rust); }
-  .process-decision div { text-align: left; }
-  .process-decision small { color: var(--rust); }
-  .process-decision strong { font-size: 15px; }
-  .process-decision em { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; font-style: normal; }
-  .process-end { width: 100%; }
-  .process-connectors,
-  .process-yes,
-  .process-no { display: none; }
+  .process-map svg { min-width: 980px; }
 }
 
 @media (max-width: 760px) {
